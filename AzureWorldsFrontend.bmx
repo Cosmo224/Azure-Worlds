@@ -19,8 +19,8 @@ Repeat
 					End ' exit  
 			End Select
 		Case EVENT_TIMERTICK ' Idle
-			Redraw()
-			
+			InstanceMgr.Redraw()
+			App.AzCheckTreeViewSelection(AzWindowExplorer)
 		Case EVENT_KEYDOWN ' KeyDown
 			Select EventData()
 				Case KEY_W ' check for W for testing purposes
@@ -50,39 +50,6 @@ Forever
 Function TstInsrtBlk()
 	Print("Inserting Instance")
 	InstanceMgr.InsertInstance(0,Rnd(0,900),Rnd(0,700),Rnd(5,64),Rnd(5,64),Rnd(0,255),Rnd(0,255),Rnd(0,255),Rnd(1,32),0)
-	
-End Function
-
-Function Redraw()
-	Cls
-	For InstanceMgr = EachIn AzInstanceList
-		SetColor InstanceMgr.colourR,InstanceMgr.colourG,InstanceMgr.colourB ' R/G/B
-		Select InstanceMgr.instanceId ' what type of block should we add>
-			Case 0
-				DrawRect InstanceMgr.posX,InstanceMgr.posY,InstanceMgr.sizeX,InstanceMgr.sizeY ' draw square [type 0]
-			Case 1
-				DrawOval InstanceMgr.posX,InstanceMgr.posY,InstanceMgr.sizeX,InstanceMgr.sizeY ' draw square [type 0]
-			Default
-				App.HandleError(3,"Attempted to insert nonexistent brick type.",1,0)
-		End Select
-		
-		Select InstanceMgr.styling
-			Case 0
-				SetColor InstanceMgr.colourR-32,InstanceMgr.colourG-32,InstanceMgr.colourB-32 ' test styling
-				DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
-				DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
-				DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
-				DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
-			Case 1
-				
-			Default
-				App.HandleError(4,"Attemped to insert brick with nonexistent style ID.",2,0)
-		End Select 
-	
-		SetColor 255,255,255 ' restore colour
-	Next
-	Flip 
-	
 	
 End Function
 
