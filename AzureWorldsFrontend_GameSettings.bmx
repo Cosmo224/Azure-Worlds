@@ -1,0 +1,3 @@
+Function GameSettings()
+
+End Function
