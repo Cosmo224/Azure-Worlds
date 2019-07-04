@@ -4,6 +4,7 @@ Include "Engine/AzureWorldsApp.bmx"
 Include "AzureWorldsFrontend_ChangeColour.bmx"
 Include "AzureWorldsFrontend_InsertObject.bmx"
 Include "AzureWorldsFrontend_ChangeSize.bmx"
+Include "AzureWorldsFrontend_GameSettings.bmx"
 Global App:AzureWorlds = New AzureWorlds ' instantiate the app
 Global InstanceMgr:InstanceManager = New InstanceManager ' instantiate the instance manager
 'TODO: Get from Config file
@@ -32,6 +33,8 @@ Repeat
 			EndIf
 		Case EVENT_MENUACTION
 			Select EventData()
+				Case 102
+					GameSettings()
 				Case 202
 					InsertObject()
 				Case 203
