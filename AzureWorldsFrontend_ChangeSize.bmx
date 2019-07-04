@@ -1,13 +1,11 @@
 
 Function ChangeSize()
-	Local CsWindow:TGadget = CreateWindow("ChangeSize",GraphicsWidth()/5,GraphicsHeight()/5,400,150,Null) ' Window
-	Local CsXSize:TGadget = CreateTextField(54,16,244,24,CsWindow) ' Object type label
-	Local CsYSize:TGadget = CreateTextField(54,36,244,24,CsWindow)
-
-	Local CsOk:TGadget = CreateButton("OK",269,42,64,24,CsWindow) ' OK button
-	For Local CsItems:String = EachIn AzInstanceIdList ' go thru the InstanceID list
-		'AddGadgetItem CsDropdown,CsItems ' add them all to the dropdown
-	Next
+	Local CsWindow:TGadget = CreateWindow("ChangeSize",GraphicsWidth()/5,GraphicsHeight()/5,400,200,Null) ' Window
+	Local CsXLabel:TGadget = CreateLabel("X: ",4,18,80,24,CsWindow)
+	Local CsYLabel:TGadget = CreateLabel("Y: ",4,42,80,24,CsWindow)
+	Local CsXSize:TGadget = CreateTextField(88,16,244,24,CsWindow) ' Object type label
+	Local CsYSize:TGadget = CreateTextField(88,42,244,24,CsWindow)
+	Local CsOk:TGadget = CreateButton("OK",269,72,64,24,CsWindow) ' OK button
 
 	Repeat
 		Select WaitEvent()
@@ -20,12 +18,13 @@ Function ChangeSize()
 			Case EVENT_GADGETACTION
 				Select EventSource()
 					Case CsXSize
-						AzCurrentSizeX = Int TextFieldText(CsXSize)
+						AzCurrentSizeX = Int TextFieldText(CsXSize) ' convert the text field text to an int and then set the x size to the int
 					Case CsYSize
-						AzCurrentSizeY = Int TextFieldText(CsYSize)
+						AzCurrentSizeY = Int TextFieldText(CsYSize) ' convert the Text Field Text To an Int And Then set the x size To the Int
 					Case CsOk ' exit!
-						If AzCurrentSizeX = 0 Or AzCurrentSizeY = 0
-						
+						If AzCurrentSizeX = 0 Or AzCurrentSizeY = 0 ' if they were retarded and put in some stupid shit like sfadjsfkh
+							AzCurrentSizeX = 32 ' reset to a dummy size
+							AzCurrentSizeY = 32 
 						EndIf
 						FreeGadget CsWindow 'remove the CsWindow and all of its children
 						Return ' return because we selected somethingf
