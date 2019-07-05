@@ -18,12 +18,14 @@ Global AzCurrentStyling:Int=0 ' Current styling
 Global AzGlobalTimer:TTimer ' Timer for running the game
 Global AzInstanceList:TList
 Global AzInstanceIdList:TList ' hack
+Global AzWindowExplorerList:TList ' you can do this
 Global AzWindow:TGadget
 Global AzWindowMenu:TGadget
 Global AzWindowCanvas:TGadget  
 Global AzWindowFileMenu:TGadget
 Global AzWindowGameMenu:TGadget
 Global AzWindowToolsMenu:TGadget
+Global AzWindowToolsMenuStyleButton:TGadget ' this button only because we need to handle it
 Global AzWindowHelpMenu:TGadget 
 Global AzWindowExplorer:TGadget
 Global AzWindowExplorerRoot:TGadget
@@ -45,6 +47,7 @@ Type AzureWorlds
 		Syslog = Self.OpenLog("Engine\AvantGardeEyes.log")
 		AzInstanceList = New TList ' New instance list
 		AzInstanceIdList = New TList ' New Instance Id list - external display only
+		AzWindowExplorerList = New TList
 		WriteLog("Azure Worlds Initalizing...",Syslog)
 		AzGlobalTimer = CreateTimer(60) ' initalize the timer
 		WriteLog("Created timer...",Syslog)
@@ -129,10 +132,11 @@ Type AzureWorlds
 		CreateMenu("Colour",203,AzWindowToolsMenu) ' Colour menu
 		CreateMenu("Size",204,AzWindowToolsMenu) ' Size menu
 		CreateMenu("Effect",205,AzWindowToolsMenu) ' Effect menu
-		CreateMenu("Style",206,AzWindowToolsMenu) ' Style menu
+		AzWindowToolsMenuStyleButton = CreateMenu("Style",206,AzWindowToolsMenu) ' Style menu - we need to handle this
 		CreateMenu("",207,AzWindowToolsMenu) ' Dummy menu for divider
 		CreateMenu("Check for Updates",208,AzWindowToolsMenu) ' Check for Updates
 		
+		CheckMenu AzWindowToolsMenuStyleButton ' so it doesn't act weirdly
 		' HELP MENU SUBMENUS
 		
 		CreateMenu("Online Help",301,AzWindowHelpMenu) ' Online help menu
@@ -207,7 +211,21 @@ Type AzureWorlds
 	End Method
 	
 	Method AzRegisterTreeView(instanceId,uniqueId)
-		AddTreeViewNode instanceId + " (ID: " + uniqueId + ")",AzWindowExplorerRoot ' add the tree view node to the root of the explorer
+		Local AzT:TGadget = AddTreeViewNode(instanceId + " (ID: " + uniqueId + ")",AzWindowExplorerRoot) ' add the tree view node to the root of the explorer
+		AzWindowExplorerList.AddLast(AzT)
+	End Method
+
+	Method AzUnregisterTreeView(uniqueId)
+		FreeGadget SelectedTreeViewNode(AzWindowExplorer) ' remove the treeview gadget
+		SelectTreeViewNode(AzWindowExplorer) 'deselect	
+	End Method
+	
+	Method AzCheckTreeViewSelection(treeView:TGadget)
+		If SelectedTreeViewNode(treeView) <> Null
+			AzToolVisibility(1,1,1,1,1,1) 	'all tools visible	
+		Else
+			AzToolVisibility(1,0,0,0,0,0) ' all except click to insert tool invisible
+		EndIf
 	End Method
 End Type
 
@@ -252,6 +270,32 @@ Type InstanceManager Extends AzureWorlds
 
 	End Method
 	
+	Method DeleteInstance() ' delete instance
+		Local index=0 ' index of the part in question to delete
+		For Local n:TGadget = EachIn AzWindowExplorerList ' go thru everything
+			index=index+1
+			If n = SelectedTreeViewNode(AzWindowExplorer) 'ok
+				Exit ' exit the loop so we don't have to call another function
+			EndIf 
+		Next
+	
+		For Local i:InstanceManager = EachIn AzInstanceList
+			If index = i.uniqueId ' if the ID we want to delete is actually the ID
+				WriteLog("Deleting instance with ID " + i.uniqueId,Syslog)
+				AzInstanceList.Remove(i) ' remove it from the list, thus making it inaccessible
+				i=Null ' remove the actual object
+				AzUnregisterTreeView(uniqueId) ' remove the treeview node signifying the object
+				For Local i:InstanceManager = EachIn AzInstanceList ' yes, we have to do this
+					If i.uniqueId > uniqueId
+					i.uniqueId = i.uniqueId - 1 ' decrement all uniqueIds by 1
+				EndIf ' this unfucks the treeview
+			Next
+
+			EndIf 
+			
+		Next
+	End Method
+	
 	Method DetermineInstanceParameters:String(instanceId:String) ' this determines the parameters of a brick by their Instance IDs
 		Select instanceId
 			Case 0
@@ -283,6 +327,40 @@ Type InstanceManager Extends AzureWorlds
 			Return (m+x-diff)*s
 		EndIf  
 	End Method 
+	
+	Method Redraw()
+	Cls
+	For InstanceMgr = EachIn AzInstanceList
+		SetColor InstanceMgr.colourR,InstanceMgr.colourG,InstanceMgr.colourB ' R/G/B
+		Select InstanceMgr.instanceId ' what type of block should we add>
+			Case 0
+				DrawRect InstanceMgr.posX,InstanceMgr.posY,InstanceMgr.sizeX,InstanceMgr.sizeY ' draw square [type 0]
+			Case 1
+				DrawOval InstanceMgr.posX,InstanceMgr.posY,InstanceMgr.sizeX,InstanceMgr.sizeY ' draw square [type 0]
+			Default
+				App.HandleError(3,"Attempted to insert nonexistent brick type.",1,0)
+		End Select
+		
+		Select InstanceMgr.styling
+			Case 0
+				SetColor InstanceMgr.colourR-32,InstanceMgr.colourG-32,InstanceMgr.colourB-32 ' test styling
+				DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
+				DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
+				DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
+				DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
+			Case 1
+				
+			Default
+				App.HandleError(4,"Attemped to insert brick with nonexistent style ID.",2,0)
+		End Select 
+	
+		SetColor 255,255,255 ' restore colour
+	Next
+	Flip 
+	
+	
+	End Method
+
 
 End Type
 
