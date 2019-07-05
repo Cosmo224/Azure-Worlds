@@ -5,6 +5,7 @@ Include "AzureWorldsFrontend_ChangeColour.bmx"
 Include "AzureWorldsFrontend_InsertObject.bmx"
 Include "AzureWorldsFrontend_ChangeSize.bmx"
 Include "AzureWorldsFrontend_GameSettings.bmx"
+Include "AzureWorldsFrontend_StylingHandler.bmx"
 Global App:AzureWorlds = New AzureWorlds ' instantiate the app
 Global InstanceMgr:InstanceManager = New InstanceManager ' instantiate the instance manager
 'TODO: Get from Config file
@@ -22,11 +23,6 @@ Repeat
 			InstanceMgr.Redraw()
 			App.AzCheckTreeViewSelection(AzWindowExplorer)
 		Case EVENT_KEYDOWN ' KeyDown
-			Select EventData()
-				Case KEY_W ' check for W for testing purposes
-					TstInsrtBlk()
-				
-			End Select
 		Case EVENT_MOUSEDOWN ' We want to insert something! :D
 			If AzClickToInsert = 1
 				InstanceMgr.InsertInstance(AzCurrentInstanceId,EventX(),EventY(),AzCurrentSizeX,AzCurrentSizeY,AzCurrentColourR,AzCurrentColourG,AzCurrentColourB,AzCurrentGridSize,AzCurrentStyling) ' Insert the block - 1 line of code!
@@ -41,15 +37,12 @@ Repeat
 					ChangeColour()
 				Case 204
 					ChangeSize()
+				Case 206
+					StylingHandler()
 				Case 304
 					Notify("AZURE WORLDS~nVersion 1.0. ~n~nCreated by Connor Hyde. Portions of code: ~n© 2017-2019 Connor Hyde. ~n© 2019 avant-gardé eyes.")
 			End Select 
 	End Select 
 Forever
 
-Function TstInsrtBlk()
-	Print("Inserting Instance")
-	InstanceMgr.InsertInstance(0,Rnd(0,900),Rnd(0,700),Rnd(5,64),Rnd(5,64),Rnd(0,255),Rnd(0,255),Rnd(0,255),Rnd(1,32),0)
-	
-End Function
 

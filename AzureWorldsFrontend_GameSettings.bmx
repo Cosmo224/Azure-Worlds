@@ -1,10 +1,9 @@
 Function GameSettings()
 	Local GsWindow:TGadget = CreateWindow("Game Settings...",GraphicsWidth()/5,GraphicsHeight()/5,400,400,Null) ' Window
-	Local GsLabel:TGadget = CreateLabel("Object Type: ",4,16,80,24,GsWindow) ' Object type label
-	Local GsDropdown:TGadget = CreateComboBox(88,12,244,24,GsWindow) ' Selection dropdown
-	Local GsOk:TGadget = CreateButton("OK",269,42,64,24,GsWindow) ' OK button
+	Local GsLabel:TGadget = CreateLabel("General:",4,16,80,24,GsWindow) ' Object type label
+	Local GsStylingTrigger:TGadget = CreateLabel("Under Construction",4,40,244,24,GsWindow) ' Selection dropdown
+	Local GsOk:TGadget = CreateButton("OK",269,290,64,24,GsWindow) ' OK button
 
-	SelectGadgetItem GsDropdown,0 ' so a blank item isn't selected
 	Repeat
 		Select WaitEvent()
 			Case EVENT_WINDOWCLOSE ' Player wants to exit out
@@ -16,6 +15,7 @@ Function GameSettings()
 			Case EVENT_GADGETACTION
 				Select EventSource()			
 					Case GsOk ' exit!
+						
 						FreeGadget GsWindow 'remove the Gswindow and all of its children
 						Return ' return because we selected something.
 				End Select			

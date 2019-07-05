@@ -24,6 +24,7 @@ Global AzWindowCanvas:TGadget
 Global AzWindowFileMenu:TGadget
 Global AzWindowGameMenu:TGadget
 Global AzWindowToolsMenu:TGadget
+Global AzWindowToolsMenuStyleButton:TGadget ' this button only because we need to handle it
 Global AzWindowHelpMenu:TGadget 
 Global AzWindowExplorer:TGadget
 Global AzWindowExplorerRoot:TGadget
@@ -129,10 +130,11 @@ Type AzureWorlds
 		CreateMenu("Colour",203,AzWindowToolsMenu) ' Colour menu
 		CreateMenu("Size",204,AzWindowToolsMenu) ' Size menu
 		CreateMenu("Effect",205,AzWindowToolsMenu) ' Effect menu
-		CreateMenu("Style",206,AzWindowToolsMenu) ' Style menu
+		AzWindowToolsMenuStyleButton = CreateMenu("Style",206,AzWindowToolsMenu) ' Style menu - we need to handle this
 		CreateMenu("",207,AzWindowToolsMenu) ' Dummy menu for divider
 		CreateMenu("Check for Updates",208,AzWindowToolsMenu) ' Check for Updates
 		
+		CheckMenu AzWindowToolsMenuStyleButton ' so it doesn't act weirdly
 		' HELP MENU SUBMENUS
 		
 		CreateMenu("Online Help",301,AzWindowHelpMenu) ' Online help menu
@@ -214,7 +216,7 @@ Type AzureWorlds
 		If SelectedTreeViewNode(treeView) <> Null
 			AzToolVisibility(1,1,1,1,1,1) 	'all tools visible	
 		Else
-			AzToolVisibility(0,1,1,1,1,1) ' all except click to insert tool invisible
+			AzToolVisibility(1,0,0,0,0,0) ' all except click to insert tool invisible
 		EndIf
 	End Method
 End Type
