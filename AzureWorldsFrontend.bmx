@@ -42,6 +42,12 @@ Repeat
 				Case 304
 					Notify("AZURE WORLDS~nVersion 1.0. ~n~nCreated by Connor Hyde. Portions of code: ~n© 2017-2019 Connor Hyde. ~n© 2019 avant-gardé eyes.")
 			End Select 
+		Case EVENT_GADGETACTION
+			Select EventSource() ' what triggered it?
+				Case AzWindowDelBtn
+					InstanceMgr.DeleteInstance() ' no we don't need any params.
+			End Select
+		
 	End Select 
 Forever
 

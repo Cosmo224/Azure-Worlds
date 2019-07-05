@@ -18,6 +18,7 @@ Global AzCurrentStyling:Int=0 ' Current styling
 Global AzGlobalTimer:TTimer ' Timer for running the game
 Global AzInstanceList:TList
 Global AzInstanceIdList:TList ' hack
+Global AzWindowExplorerList:TList ' you can do this
 Global AzWindow:TGadget
 Global AzWindowMenu:TGadget
 Global AzWindowCanvas:TGadget  
@@ -46,6 +47,7 @@ Type AzureWorlds
 		Syslog = Self.OpenLog("Engine\AvantGardeEyes.log")
 		AzInstanceList = New TList ' New instance list
 		AzInstanceIdList = New TList ' New Instance Id list - external display only
+		AzWindowExplorerList = New TList
 		WriteLog("Azure Worlds Initalizing...",Syslog)
 		AzGlobalTimer = CreateTimer(60) ' initalize the timer
 		WriteLog("Created timer...",Syslog)
@@ -209,9 +211,15 @@ Type AzureWorlds
 	End Method
 	
 	Method AzRegisterTreeView(instanceId,uniqueId)
-		AddTreeViewNode instanceId + " (ID: " + uniqueId + ")",AzWindowExplorerRoot ' add the tree view node to the root of the explorer
+		Local AzT:TGadget = AddTreeViewNode(instanceId + " (ID: " + uniqueId + ")",AzWindowExplorerRoot) ' add the tree view node to the root of the explorer
+		AzWindowExplorerList.AddLast(AzT)
 	End Method
 
+	Method AzUnregisterTreeView(uniqueId)
+		FreeGadget SelectedTreeViewNode(AzWindowExplorer) ' remove the treeview gadget
+		SelectTreeViewNode(AzWindowExplorer) 'deselect	
+	End Method
+	
 	Method AzCheckTreeViewSelection(treeView:TGadget)
 		If SelectedTreeViewNode(treeView) <> Null
 			AzToolVisibility(1,1,1,1,1,1) 	'all tools visible	
@@ -260,6 +268,31 @@ Type InstanceManager Extends AzureWorlds
 		AzRegisterTreeView(insMan.instanceId,insMan.uniqueId)
 		Return insMan ' return insMan
 
+	End Method
+	
+	Method DeleteInstance() ' delete instance
+		Local index=0 ' index of the part in question to delete
+		For Local n:TGadget = EachIn AzWindowExplorerList ' go thru everything
+			index=index+1
+			If n = SelectedTreeViewNode(AzWindowExplorer) 'ok
+				Exit ' exit the loop so we don't have to call another function
+			EndIf 
+		Next
+	
+		For Local i:InstanceManager = EachIn AzInstanceList
+			If index = i.uniqueId ' if the ID we want to delete is actually the ID
+				AzInstanceList.Remove(i) ' remove it from the list, thus making it inaccessible
+				i=Null ' remove the actual object
+				AzUnregisterTreeView(uniqueId) ' remove the treeview node signifying the object
+				For Local i:InstanceManager = EachIn AzInstanceList ' yes, we have to do this
+					If i.uniqueId > uniqueId
+					i.uniqueId = i.uniqueId - 1 ' decrement all uniqueIds by 1
+				EndIf ' this unfucks the treeview
+			Next
+
+			EndIf 
+			
+		Next
 	End Method
 	
 	Method DetermineInstanceParameters:String(instanceId:String) ' this determines the parameters of a brick by their Instance IDs
