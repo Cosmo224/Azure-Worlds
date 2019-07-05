@@ -281,6 +281,7 @@ Type InstanceManager Extends AzureWorlds
 	
 		For Local i:InstanceManager = EachIn AzInstanceList
 			If index = i.uniqueId ' if the ID we want to delete is actually the ID
+				WriteLog("Deleting instance with ID " + i.uniqueId)
 				AzInstanceList.Remove(i) ' remove it from the list, thus making it inaccessible
 				i=Null ' remove the actual object
 				AzUnregisterTreeView(uniqueId) ' remove the treeview node signifying the object
