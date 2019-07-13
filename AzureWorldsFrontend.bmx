@@ -25,14 +25,19 @@ Repeat
 			App.AzCheckTreeViewSelection(AzWindowExplorer)
 
 		Case EVENT_KEYREPEAT ' Undocumented feature
-
-			Case KEY_LEFT ' Scroll left
-				
-			Case KEY_RIGHT ' Scroll right
-			
+			Select EventData()
+				Case KEY_LEFT ' Scroll left
+					If AzOffsetX >= 0 ' if AzOffsetX is more than 0 (cus yeah)
+						AzOffsetX = AzOffsetX - AzSpeedX ' reduce the offsetx by the speed
+					EndIf
+				Case KEY_RIGHT ' Scroll right
+					If AzOffsetX <= AzWorldSizeX ' if x offset less than worldsize
+						AzOffsetX = AzOffsetX + AzSpeedX ' ditto
+					EndIf 
+			End Select		
 		Case EVENT_MOUSEDOWN ' We want to insert something! :D
 			If AzClickToInsert = 1
-				InstanceMgr.InsertInstance(AzCurrentInstanceId,EventX(),EventY(),AzCurrentSizeX,AzCurrentSizeY,AzCurrentColourR,AzCurrentColourG,AzCurrentColourB,AzCurrentGridSize,AzCurrentStyling) ' Insert the block - 1 line of code!
+				InstanceMgr.InsertInstance(AzCurrentInstanceId,EventX() + AzOffsetX,EventY(),AzCurrentSizeX,AzCurrentSizeY,AzCurrentColourR,AzCurrentColourG,AzCurrentColourB,AzCurrentGridSize,AzCurrentStyling) ' Insert the block - 1 line of code!
 			EndIf
 		Case EVENT_MENUACTION
 			Select EventData()

@@ -1,6 +1,26 @@
-[04 Jul 2019 20:15:14] Azure Worlds Initalizing...
-[04 Jul 2019 20:15:14] Created timer...
-[04 Jul 2019 20:15:22] Registering Instance IDs...
-[04 Jul 2019 20:15:22] Registered ID 0 Block
-[04 Jul 2019 20:15:22] Registered ID 1 CircleBlock
-[04 Jul 2019 11:50:29] You didn't select an object. Please select an object to insert.
+[13 Jul 2019 16:47:30] AZURE WORLDS
+[13 Jul 2019 16:47:30] © 2019 avant-gardé eyes
+[13 Jul 2019 16:47:30] Initalizing...
+[13 Jul 2019 16:47:30] Debug display: 1
+[13 Jul 2019 16:47:30] Window size X: 1288
+[13 Jul 2019 16:47:30] Window size Y: 960
+[13 Jul 2019 16:47:30] Graphics size X 1031
+[13 Jul 2019 16:47:30] Graphics size Y 720
+[13 Jul 2019 16:47:30] World size X 4000
+[13 Jul 2019 16:47:30] World size Y 1500
+[13 Jul 2019 16:47:30] Intro image: Engine/NonInstanceTextures/avantgarde.png
+[13 Jul 2019 16:47:30] Intro display time: 7500
+[13 Jul 2019 16:47:30] Title: avant-gardé eyes presents Azure Worlds
+[13 Jul 2019 16:47:30] Initalized AzInstanceList.
+[13 Jul 2019 16:47:30] Initalized AzInstanceIdList.
+[13 Jul 2019 16:47:30] Initalized AzWindowExplorerList.
+[13 Jul 2019 16:47:30] Created timer...
+[13 Jul 2019 16:47:30] Initalising intro graphics
+[13 Jul 2019 16:47:31] Displayed images.
+[13 Jul 2019 16:47:38] Intro done. Ending graphics...
+[13 Jul 2019 16:47:38] Destroying image..
+[13 Jul 2019 16:47:38] UI initalising...
+[13 Jul 2019 16:47:38] Registering Instance IDs...
+[13 Jul 2019 16:47:38] Registered ID 0 with name Block
+[13 Jul 2019 16:47:38] Registered ID 1 with name CircleBlock
+[13 Jul 2019 16:47:38] Init done.
