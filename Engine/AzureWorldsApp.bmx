@@ -14,6 +14,10 @@ Global AzCurrentInstanceId:Int=0 ' Current Instance ID
 Global AzCurrentUniqueId:Int=0 ' Current Unique ID - integrate? 
 Global AzCurrentSizeX:Int=30 ' Current size - X
 Global AzCurrentSizeY:Int=30 ' Current size - Y
+Global AzOffsetX:Int=0 ' Offset X for scrolling
+Global AzOffsetY:Int=0 ' Offset Y for scrolling
+Global AzSpeedX:Int=0 ' Scrollspeed X
+Global AzSpeedY:Int=0 ' Scrollspeed Y
 Global AzCurrentStyling:Int=0 ' Current styling
 Global AzGlobalTimer:TTimer ' Timer for running the game
 Global AzInstanceList:TList
@@ -229,6 +233,8 @@ Type AzureWorlds
 	End Method
 End Type
 
+' Azure Worlds Instance Manager
+' © 2019 Cosmo
 Type InstanceManager Extends AzureWorlds
 	Field posX ' X position of the brick
 	Field posY ' Y position of the brick
@@ -329,6 +335,7 @@ Type InstanceManager Extends AzureWorlds
 	End Method 
 	
 	Method Redraw()
+
 	Cls
 	For InstanceMgr = EachIn AzInstanceList
 		SetColor InstanceMgr.colourR,InstanceMgr.colourG,InstanceMgr.colourB ' R/G/B
@@ -363,4 +370,5 @@ Type InstanceManager Extends AzureWorlds
 
 
 End Type
+
 
