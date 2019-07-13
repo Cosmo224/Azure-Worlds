@@ -2,7 +2,6 @@
 
 ' Globals
 Global Syslog:TStream
-Global debugLevel:Int=1
 Global Beta:Int
 Global Version:Int=1
 Global AzClickToInsert:Int=1
@@ -60,8 +59,8 @@ Type AzureWorlds
 		WriteLog("Window size Y: " + y,Syslog)
 		WriteLog("Graphics size X " + canvasSzX,Syslog)
 		WriteLog("Graphics size Y " + canvasSzY,Syslog)
-		WriteLog("World size X " + worldSzX,Syslog)
-		WriteLog("World size Y " + worldSzY,Syslog)
+		WriteLog("Default world size X " + worldSzX,Syslog)
+		WriteLog("Default world size Y " + worldSzY,Syslog)
 		WriteLog("Intro image: " + introImg,Syslog)
 		WriteLog("Intro display time: " + displayTime,Syslog)
 		WriteLog("Title: " + appTtl,Syslog)
@@ -103,7 +102,7 @@ Type AzureWorlds
 	End Method
 	
 	Method WriteLog(logText:String,logStream:TStream)
-		If debugLevel = 1
+		If AzDebugDisplay = 1
 			WriteLine(logStream,"[" + CurrentDate() + " " + CurrentTime() + "] " + logText)
 			Return True
 		EndIf 
@@ -154,7 +153,7 @@ Type AzureWorlds
 		
 		' TOOLS MENU SUBMENUS
 		
-		If debugLevel > 1
+		If AzDebugDisplay > 1
 			CreateMenu("Debug",201,AzWindowToolsMenu) ' Debug menu
 		EndIf
 		CreateMenu("Insert Object",202,AzWindowToolsMenu) ' Insert object menu
@@ -364,12 +363,11 @@ Type InstanceManager Extends AzureWorlds
 	Cls
 	For InstanceMgr = EachIn AzInstanceList
 		SetColor InstanceMgr.colourR,InstanceMgr.colourG,InstanceMgr.colourB ' R/G/B
-			'If InstanceMgr.posX + AzOffsetX > InstanceMgr.posX  And AzOffsetX < InstanceMgr.posX + GraphicsHeight()
 			Select InstanceMgr.instanceId ' what type of block should we add>
 				Case 0
 					DrawRect InstanceMgr.posX - AzOffsetX,InstanceMgr.posY,InstanceMgr.sizeX,InstanceMgr.sizeY ' draw square [type 0]
 				Case 1
-					DrawOval InstanceMgr.posX - AzOffsetX,InstanceMgr.posY,InstanceMgr.sizeX,InstanceMgr.sizeY ' draw square [type 0]
+					DrawOval InstanceMgr.posX - AzOffsetX,InstanceMgr.posY,InstanceMgr.sizeX,InstanceMgr.sizeY ' draw circle [type 1] - note we subtract the offset x from the actual x position for scrolling
 				Default
 					App.HandleError(3,"Attempted to insert nonexistent brick type.",1,0)
 			End Select
@@ -377,7 +375,7 @@ Type InstanceManager Extends AzureWorlds
 			Select InstanceMgr.styling
 				Case 0
 					SetColor InstanceMgr.colourR-32,InstanceMgr.colourG-32,InstanceMgr.colourB-32 ' test styling
-					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
+					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' add offset to 
 					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
 					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
 					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
@@ -386,7 +384,6 @@ Type InstanceManager Extends AzureWorlds
 				Default
 					App.HandleError(4,"Attemped to insert brick with nonexistent style ID.",2,0)
 			End Select ' todo: add var 
-			'EndIf 
 		SetColor 255,255,255 ' restore colour
 	Next
 	If AzDebugDisplay = 1 ' if debug display is on

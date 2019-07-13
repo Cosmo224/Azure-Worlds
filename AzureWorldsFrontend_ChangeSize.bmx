@@ -26,6 +26,7 @@ Function ChangeSize()
 							AzCurrentSizeX = 32 ' reset to a dummy size
 							AzCurrentSizeY = 32 
 						EndIf
+						AzCurrentGridSize = AzCurrentSizeX ' use x size f o r n o w! - make toggleable in Game Settings
 						FreeGadget CsWindow 'remove the CsWindow and all of its children
 						Return ' return because we selected somethingf
 				End Select			

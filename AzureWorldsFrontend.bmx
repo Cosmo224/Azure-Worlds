@@ -27,11 +27,11 @@ Repeat
 		Case EVENT_KEYREPEAT ' Undocumented feature
 			Select EventData()
 				Case KEY_LEFT ' Scroll left
-					If AzOffsetX >= 0 ' if AzOffsetX is more than 0 (cus yeah)
+					If AzOffsetX > 0 ' if AzOffsetX is more than 0 (cus yeah)
 						AzOffsetX = AzOffsetX - AzSpeedX ' reduce the offsetx by the speed
 					EndIf
 				Case KEY_RIGHT ' Scroll right
-					If AzOffsetX <= AzWorldSizeX ' if x offset less than worldsize
+					If AzOffsetX < AzWorldSizeX ' if x offset less than worldsize
 						AzOffsetX = AzOffsetX + AzSpeedX ' ditto
 					EndIf 
 			End Select		
