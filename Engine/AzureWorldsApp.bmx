@@ -14,10 +14,11 @@ Global AzCurrentInstanceId:Int=0 ' Current Instance ID
 Global AzCurrentUniqueId:Int=0 ' Current Unique ID - integrate? 
 Global AzCurrentSizeX:Int=30 ' Current size - X
 Global AzCurrentSizeY:Int=30 ' Current size - Y
+Global AzDebugDisplay:Int=1 ' Display debug information
 Global AzOffsetX:Int=0 ' Offset X for scrolling
 Global AzOffsetY:Int=0 ' Offset Y for scrolling
-Global AzSpeedX:Int=0 ' Scrollspeed X
-Global AzSpeedY:Int=0 ' Scrollspeed Y
+Global AzSpeedX:Int=5 ' Scrollspeed X
+Global AzSpeedY:Int=5 ' Scrollspeed Y (last 4 vars placeholder values)
 Global AzCurrentStyling:Int=0 ' Current styling
 Global AzGlobalTimer:TTimer ' Timer for running the game
 Global AzInstanceList:TList
@@ -359,12 +360,19 @@ Type InstanceManager Extends AzureWorlds
 				
 			Default
 				App.HandleError(4,"Attemped to insert brick with nonexistent style ID.",2,0)
-		End Select 
-	
+		End Select ' todo: add var 
 		SetColor 255,255,255 ' restore colour
 	Next
+	If AzDebugDisplay = 1 ' if debug display is on
+		SetColor 255,255,255
+		DrawText "DEBUG",0,0
+		DrawText "---",0,15 ' debug mode
+		DrawText "Offset X: " + AzOffsetX,0,30
+		DrawText "Offset Y: " + AzOffsetY,0,45		
+	EndIf 
+
 	Flip 
-	
+
 	
 	End Method
 
