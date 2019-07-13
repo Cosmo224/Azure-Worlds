@@ -20,9 +20,16 @@ Repeat
 					End ' exit  
 			End Select
 		Case EVENT_TIMERTICK ' Idle
+
 			InstanceMgr.Redraw()
 			App.AzCheckTreeViewSelection(AzWindowExplorer)
-		Case EVENT_KEYDOWN ' KeyDown
+
+		Case EVENT_KEYREPEAT ' Undocumented feature
+
+			Case KEY_LEFT ' Scroll left
+				
+			Case KEY_RIGHT ' Scroll right
+			
 		Case EVENT_MOUSEDOWN ' We want to insert something! :D
 			If AzClickToInsert = 1
 				InstanceMgr.InsertInstance(AzCurrentInstanceId,EventX(),EventY(),AzCurrentSizeX,AzCurrentSizeY,AzCurrentColourR,AzCurrentColourG,AzCurrentColourB,AzCurrentGridSize,AzCurrentStyling) ' Insert the block - 1 line of code!
