@@ -17,12 +17,14 @@ Global AzCurrentSizeY:Int=30 ' Current size - Y
 Global AzDebugDisplay:Int=1 ' Display debug information
 Global AzOffsetX:Int=0 ' Offset X for scrolling
 Global AzOffsetY:Int=0 ' Offset Y for scrolling
-Global AzSpeedX:Int=5 ' Scrollspeed X
-Global AzSpeedY:Int=5 ' Scrollspeed Y (last 4 vars placeholder values)
+Global AzSpeedX:Int=20 ' Scrollspeed X
+Global AzSpeedY:Int=20 ' Scrollspeed Y (this and Scrollspeed X vars placeholder values)
 Global AzCurrentStyling:Int=0 ' Current styling
 Global AzGlobalTimer:TTimer ' Timer for running the game
 Global AzInstanceList:TList
 Global AzInstanceIdList:TList ' hack
+Global AzWorldSizeX:Int ' World size X - integrate?
+Global AzWorldSizeY:Int
 Global AzWindowExplorerList:TList ' you can do this
 Global AzWindow:TGadget
 Global AzWindowMenu:TGadget
@@ -43,34 +45,55 @@ Global AzWindowEffectBtn:TGadget
 Global AzWindowPropBtn:TGadget
 Type AzureWorlds
 
-	Method Init(x=1228,y=928,d=0,h=0,introImg:String="NonInstanceTextures\avantgarde.png",displayTime:Int=6000,appTtl:String="avant-gardé eyes presents Azure Worlds",canvasSzX=1024,canvasSzY=768) ' placeholder values
+	Method Init(x=1228,y=928,d=0,h=0,introImg:String="NonInstanceTextures\avantgarde.png",displayTime:Int=6000,appTtl:String="avant-gardé eyes presents Azure Worlds",canvasSzX=1024,canvasSzY=768,worldSzX=4000,worldSzY=1500) ' placeholder values
 		AppTitle = appTtl
 		' preparation for loading from config
 		canvasSzX = x - x/5
 		canvasSzY = y - y/4
 		SeedRnd MilliSecs() ' seed the random number generator
 		Syslog = Self.OpenLog("Engine\AvantGardeEyes.log")
+		WriteLog("AZURE WORLDS",Syslog)
+		WriteLog("© 2019 avant-gardé eyes",Syslog)
+		WriteLog("Initalizing...",Syslog) ' log init
+		WriteLog("Debug display: " + AzDebugDisplay,Syslog)
+		WriteLog("Window size X: " + x,Syslog)
+		WriteLog("Window size Y: " + y,Syslog)
+		WriteLog("Graphics size X " + canvasSzX,Syslog)
+		WriteLog("Graphics size Y " + canvasSzY,Syslog)
+		WriteLog("World size X " + worldSzX,Syslog)
+		WriteLog("World size Y " + worldSzY,Syslog)
+		WriteLog("Intro image: " + introImg,Syslog)
+		WriteLog("Intro display time: " + displayTime,Syslog)
+		WriteLog("Title: " + appTtl,Syslog)
+		AzWorldSizeX = worldSzX
+		AzWorldSizeY = worldSzY
 		AzInstanceList = New TList ' New instance list
+		WriteLog("Initalized AzInstanceList.",Syslog)
 		AzInstanceIdList = New TList ' New Instance Id list - external display only
+		WriteLog("Initalized AzInstanceIdList.",Syslog)
 		AzWindowExplorerList = New TList
-		WriteLog("Azure Worlds Initalizing...",Syslog)
+		WriteLog("Initalized AzWindowExplorerList.",Syslog)
 		AzGlobalTimer = CreateTimer(60) ' initalize the timer
 		WriteLog("Created timer...",Syslog)
+		WriteLog("Initalising intro graphics",Syslog)
 		Graphics x,y,d,h
 		Local introImage:TImage = LoadImage(introImg) ' load the intro image
 		If introImage = Null ' Null = failed to load
 			WriteLog("Failure to load: Couldn't load intro image.",Syslog)
 			HandleError(1,"Error loading intro image",1,0)
 		EndIf
-		
+		WriteLog("Displayed images.",Syslog)
 		DrawImage introImage,0,0
 		Flip
 		Delay displayTime
-		EndGraphics ' end the graphics as we use MxaGUI
+		WriteLog("Intro done. Ending graphics...",Syslog)
+		EndGraphics ' end the graphics as we use MaxGUI
+		WriteLog("Destroying image..",Syslog)
 		introImage = Null ' destroy the image
 		InitAzGui(AppTtl,x,y,canvasSzX,canvasSzY) ' initalize GUI
 		AzToolVisibility(1,0,0,0,0,0) ' set tool visibility to 1,0,0,0,0,0 as we dont need the rest
 		AzInitInstanceIdList(AzInstanceIdList) ' initalize the instanceid list
+		WriteLog("Init done.",Syslog)
 		Return True ' return true
 	End Method
 	
@@ -105,6 +128,7 @@ Type AzureWorlds
 	End Method
 	
 	Method InitAzGui:Int(AppTtl:String,x,y,canvasSzX,canvasSzY) ' initalize the Az MaxGUI
+		WriteLog("UI initalising...",Syslog)
 		AzWindow=CreateWindow(AppTtl,DesktopWidth()/4,DesktopHeight()/4,x,y,Null) ' main window
 		AzWindowCanvas = CreateCanvas(0,0,canvasSzX,canvasSzY,AzWindow) ' canvas - this holds the graphics
 		SetGraphics CanvasGraphics(AzWindowCanvas) ' redirect the graphics context to the canvas so we can draw stuff
@@ -207,11 +231,11 @@ Type AzureWorlds
 	Method AzInitInstanceIdList:TList(AzList:TList)
 		WriteLog("Registering Instance IDs...",Syslog)
 		Local Az0:String = "Block"
-		WriteLog("Registered ID 0 " + Az0,Syslog)
 		Local Az1:String = "CircleBlock"
-		WriteLog("Registered ID 1 " + Az1,Syslog)
 		AzList.AddLast(Az0)
+		WriteLog("Registered ID 0 with name " + Az0,Syslog)	
 		AzList.AddLast(Az1)
+		WriteLog("Registered ID 1 with name " + Az1,Syslog)		
 		Return AzList 
 	End Method
 	
@@ -340,27 +364,29 @@ Type InstanceManager Extends AzureWorlds
 	Cls
 	For InstanceMgr = EachIn AzInstanceList
 		SetColor InstanceMgr.colourR,InstanceMgr.colourG,InstanceMgr.colourB ' R/G/B
-		Select InstanceMgr.instanceId ' what type of block should we add>
-			Case 0
-				DrawRect InstanceMgr.posX,InstanceMgr.posY,InstanceMgr.sizeX,InstanceMgr.sizeY ' draw square [type 0]
-			Case 1
-				DrawOval InstanceMgr.posX,InstanceMgr.posY,InstanceMgr.sizeX,InstanceMgr.sizeY ' draw square [type 0]
-			Default
-				App.HandleError(3,"Attempted to insert nonexistent brick type.",1,0)
-		End Select
+			'If InstanceMgr.posX + AzOffsetX > InstanceMgr.posX  And AzOffsetX < InstanceMgr.posX + GraphicsHeight()
+			Select InstanceMgr.instanceId ' what type of block should we add>
+				Case 0
+					DrawRect InstanceMgr.posX - AzOffsetX,InstanceMgr.posY,InstanceMgr.sizeX,InstanceMgr.sizeY ' draw square [type 0]
+				Case 1
+					DrawOval InstanceMgr.posX - AzOffsetX,InstanceMgr.posY,InstanceMgr.sizeX,InstanceMgr.sizeY ' draw square [type 0]
+				Default
+					App.HandleError(3,"Attempted to insert nonexistent brick type.",1,0)
+			End Select
 		
-		Select InstanceMgr.styling
-			Case 0
-				SetColor InstanceMgr.colourR-32,InstanceMgr.colourG-32,InstanceMgr.colourB-32 ' test styling
-				DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
-				DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
-				DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
-				DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
-			Case 1
+			Select InstanceMgr.styling
+				Case 0
+					SetColor InstanceMgr.colourR-32,InstanceMgr.colourG-32,InstanceMgr.colourB-32 ' test styling
+					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
+					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
+					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
+					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
+				Case 1
 				
-			Default
-				App.HandleError(4,"Attemped to insert brick with nonexistent style ID.",2,0)
-		End Select ' todo: add var 
+				Default
+					App.HandleError(4,"Attemped to insert brick with nonexistent style ID.",2,0)
+			End Select ' todo: add var 
+			'EndIf 
 		SetColor 255,255,255 ' restore colour
 	Next
 	If AzDebugDisplay = 1 ' if debug display is on
