@@ -18,9 +18,9 @@ Function ChangeSize()
 			Case EVENT_GADGETACTION
 				Select EventSource()
 					Case CsXSize
-						AzCurrentSizeX = Int TextFieldText(CsXSize) ' convert the text field text to an int and then set the x size to the int
+						AzCurrentSizeX = Int GadgetText(CsXSize) ' convert the text field text to an int and then set the x size to the int
 					Case CsYSize
-						AzCurrentSizeY = Int TextFieldText(CsYSize) ' convert the Text Field Text To an Int And Then set the x size To the Int
+						AzCurrentSizeY = Int GadgetText(CsYSize) ' convert the Text Field Text To an Int And Then set the x size To the Int
 					Case CsOk ' exit!
 						If AzCurrentSizeX = 0 Or AzCurrentSizeY = 0 ' if they were retarded and put in some stupid shit like sfadjsfkh
 							AzCurrentSizeX = 32 ' reset to a dummy size
