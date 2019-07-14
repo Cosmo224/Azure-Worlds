@@ -44,14 +44,14 @@ Global AzWindowEffectBtn:TGadget
 Global AzWindowPropBtn:TGadget
 Type AzureWorlds
 
-	Method Init(x=1228,y=928,d=0,h=0,introImg:String="NonInstanceTextures\avantgarde.png",displayTime:Int=6000,appTtl:String="avant-gardé eyes presents Azure Worlds",canvasSzX=1024,canvasSzY=768,worldSzX=4000,worldSzY=1500) ' placeholder values
+	Method Init(x=1228,y=928,d=0,h=0,introImg:String="NonInstanceTextures\avantgarde.png",displayTime:Int=6000,appTtl:String="avant-gardé eyes presents Azure Worlds",canvasSzX=1024,canvasSzY=768,worldSzX=4000,worldSzY=1500,gameName:String="AZURE WORLDS") ' placeholder values
 		AppTitle = appTtl
 		' preparation for loading from config
 		canvasSzX = x - x/5
 		canvasSzY = y - y/4
 		SeedRnd MilliSecs() ' seed the random number generator
 		Syslog = Self.OpenLog("Engine\AvantGardeEyes.log")
-		WriteLog("AZURE WORLDS",Syslog)
+		WriteLog("avant-gardé eyes engine - playing frontend " + gameName,Syslog)
 		WriteLog("© 2019 avant-gardé eyes",Syslog)
 		WriteLog("Initalizing...",Syslog) ' log init
 		WriteLog("Debug display: " + AzDebugDisplay,Syslog)

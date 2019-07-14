@@ -21,7 +21,7 @@ Function GameSettings()
 						Return ' return because we selected something.
 					Case GsWorldSize
 						AzWorldSizeX = Int GadgetText(GsWorldSize) ' set world size x to the text field text of GsWorldSize, and convert it to an int
-						If AzWorldSizeX = 0 ' Error checking (say if they put "cccccc" as a size or something screwed up)
+						If AzWorldSizeX < 1 ' Error checking (say if they put "cccccc" as a size or something screwed up) - add checking for negatives too
 							App.WriteLog("User selected invalid world size.",Syslog) ' log it if it was invalid
 							Notify("Size invalid.")
 							AzWorldSizeX = 4000		
