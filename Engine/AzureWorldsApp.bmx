@@ -300,14 +300,8 @@ Type InstanceManager Extends AzureWorlds
 
 	End Method
 	
-	Method DeleteInstance() ' delete instance (todo: make use GetCurrentlySelectedInstance())
-		Local index=0 ' index of the part in question to delete
-		For Local n:TGadget = EachIn AzWindowExplorerList ' go thru everything
-			index=index+1
-			If n = SelectedTreeViewNode(AzWindowExplorer) 'ok
-				Exit ' exit the loop so we don't have to call another function
-			EndIf 
-		Next
+	Method DeleteInstance() ' delete instance 
+		Local index=GetCurrentlySelectedInstance() ' 2019-07-14 - convert to using GetCurrentlySelectedInstance for efficiency and speed
 	
 		For Local i:InstanceManager = EachIn AzInstanceList
 			If index = i.uniqueId ' if the ID we want to delete is actually the ID
