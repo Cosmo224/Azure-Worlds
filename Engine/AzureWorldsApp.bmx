@@ -20,6 +20,7 @@ Global AzSpeedX:Int=20 ' Scrollspeed X
 Global AzSpeedY:Int=20 ' Scrollspeed Y (this and Scrollspeed X vars placeholder values)
 Global AzCurrentStyling:Int=0 ' Current styling
 Global AzGlobalTimer:TTimer ' Timer for running the game
+Global AzGfxList:TList ' list of strings holding the path to every GFX in the Gfx/ foider
 Global AzInstanceList:TList
 Global AzInstanceIdList:TList ' hack
 Global AzWorldSizeX:Int ' World size X - integrate?
@@ -64,6 +65,8 @@ Type AzureWorlds
 		WriteLog("Intro image: " + introImg,Syslog)
 		WriteLog("Intro display time: " + displayTime,Syslog)
 		WriteLog("Title: " + appTtl,Syslog)
+		AzGfxList = New TList ' initalize the gfx list
+		WriteLog("Initalized AzGfxList.",Syslog)
 		AzWorldSizeX = worldSzX
 		AzWorldSizeY = worldSzY
 		AzInstanceList = New TList ' New instance list
@@ -90,6 +93,8 @@ Type AzureWorlds
 		WriteLog("Destroying image..",Syslog)
 		introImage = Null ' destroy the image
 		InitAzGui(AppTtl,x,y,canvasSzX,canvasSzY) ' initalize GUI
+		WriteLog("Loading GFX...",Syslog)
+		InstanceMgr.LoadInstanceGFX()
 		AzToolVisibility(1,0,0,0,0,0) ' set tool visibility to 1,0,0,0,0,0 as we dont need the rest
 		AzInitInstanceIdList(AzInstanceIdList) ' initalize the instanceid list
 		WriteLog("Init done.",Syslog)
@@ -378,6 +383,24 @@ Type InstanceManager Extends AzureWorlds
 		End Select
 		Return instanceIdDescription
 	End Method 
+	
+	' Transparent, Light Graphical FX Manager
+	Method LoadInstanceGFX() ' load GFX
+		Local gfxFolder:Byte Ptr = ReadDir("Engine\Gfx\") ' read every file in the Gfx\ folder - todo: use variable...
+		
+		If gfxFolder=0
+			HandleError(7,"Failed to read Gfx folder",1,0) ' throw an error and crash
+		EndIf
+		Local currentGfx:String ' current file to load
+		Repeat
+			currentGfx = NextFile(gfxFolder) ' loop through every file in the folder
+			If ExtractExt(currentGfx) = "png" ' load all PNG files ONLY
+				WriteLog("Loading GFX @ Engine\Gfx\" + currentGfx) ' load all gfxs
+				Local gfx:TImage = LoadImage(currentGfx) 
+				AzGfxList.AddLast(gfx) ' add the gfx to the list
+			EndIf 
+		Until currentGfx = "" ' stupid legacy Blitz3D style APIs...I want to use EachIn!
+	End Method
 	
 	Method RoundPos(x#,m#)
 		If m < 0.0
