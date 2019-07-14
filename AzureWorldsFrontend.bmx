@@ -58,6 +58,8 @@ Repeat
 			Select EventSource() ' what triggered it?
 				Case AzWindowDelBtn
 					InstanceMgr.DeleteInstance() ' no we don't need any params.
+				Case AzWindowSizeBtn
+					ChangeSize(True) ' we want to resize the currently selected brick
 			End Select
 		
 	End Select 

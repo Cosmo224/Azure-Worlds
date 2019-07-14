@@ -128,7 +128,7 @@ Type AzureWorlds
 	
 	Method InitAzGui:Int(AppTtl:String,x,y,canvasSzX,canvasSzY) ' initalize the Az MaxGUI
 		WriteLog("UI initalising...",Syslog)
-		AzWindow=CreateWindow(AppTtl,DesktopWidth()/4,DesktopHeight()/4,x,y,Null) ' main window
+		AzWindow=CreateWindow(AppTtl,DesktopWidth()/5,DesktopHeight()/5,x,y,Null) ' main window
 		AzWindowCanvas = CreateCanvas(0,0,canvasSzX,canvasSzY,AzWindow) ' canvas - this holds the graphics
 		SetGraphics CanvasGraphics(AzWindowCanvas) ' redirect the graphics context to the canvas so we can draw stuff
 		AzWindowMenu = WindowMenu(AzWindow) ' window menu
@@ -183,7 +183,7 @@ Type AzureWorlds
 		' TOOLSTRIP for BLOCKS
 		AzWindowCtiBtn = CreateButton("Click-to-Insert: On",GadgetWidth(AzWindow)/8,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Click-to-Insert toggle
 		AzWindowDelBtn = CreateButton("Delete",GadgetWidth(AzWindow)/4.499,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Delete button
-		AzWindowSizeBtn = CreateButton("Size",GadgetWidth(AzWindow)/3.141,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Size button
+		AzWindowSizeBtn = CreateButton("Resize",GadgetWidth(AzWindow)/3.141,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Size button
 		AzWindowColourBtn = CreateButton("Colour",GadgetWidth(AzWindow)/2.4,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Colour button
 		AzWindowEffectBtn = CreateButton("Effects and Style",GadgetWidth(AzWindow)/1.954,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Effects and Style button
 		AzWindowPropBtn = CreateButton("Properties",GadgetWidth(AzWindow)/1.648,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Properties button
@@ -300,7 +300,7 @@ Type InstanceManager Extends AzureWorlds
 
 	End Method
 	
-	Method DeleteInstance() ' delete instance
+	Method DeleteInstance() ' delete instance (todo: make use GetCurrentlySelectedInstance())
 		Local index=0 ' index of the part in question to delete
 		For Local n:TGadget = EachIn AzWindowExplorerList ' go thru everything
 			index=index+1
@@ -326,6 +326,34 @@ Type InstanceManager Extends AzureWorlds
 		Next
 	End Method
 	
+	Method ResizeInstance(uniqueId:Int=Null) ' resize instance
+		 ' hack
+		If uniqueId = Null ' if we want to resize currently selected instance instead of arbitrary instance
+			uniqueId = GetCurrentlySelectedInstance() ' get the currently selected instance
+
+		EndIf 
+		For InstanceMgr = EachIn AzInstanceList ' loop through every instance...
+			Print(instanceMgr.uniqueId)
+			If InstanceMgr.uniqueId = uniqueId ' if this is the ID we want...
+				WriteLog("Resizing instance currently with size " + instanceMgr.sizeX + "," + instanceMgr.sizeY + " to " + AzCurrentSizeX + "," + AzCurrentSizeY,Syslog)	 
+				instanceMgr.sizeX = AzCurrentSizeX ' reuse the current variables for brevity, resize the block in the x-direction
+				instanceMgr.sizeY = AzCurrentSizeY ' reuse the current variables for brevity, resize the block in the y-direction
+			EndIf
+		Next
+
+	End Method
+	
+	Method GetCurrentlySelectedInstance() ' gets the index of the currently selected instance.
+		Local index=0 ' index of the part in question to delete
+		For Local n:TGadget = EachIn AzWindowExplorerList ' go thru everything
+			index=index+1 ' increment index
+			If n = SelectedTreeViewNode(AzWindowExplorer) 'ok
+				Return index ' exit the loop so we don't have to call another function
+			EndIf 
+		Next
+
+	End Method
+	
 	Method DetermineInstanceParameters:String(instanceId:String) ' this determines the parameters of a brick by their Instance IDs
 		Select instanceId
 			Case 0
@@ -333,7 +361,7 @@ Type InstanceManager Extends AzureWorlds
 			Case 1
 				instanceIdDescription = "CircleBrick"
 			Default
-				instanceIdDescription = "Fatal"
+				HandleError(5,"Attempted to create description for undefined Instance ID",1,0)
 		End Select
 		Return instanceIdDescription
 	End Method 
