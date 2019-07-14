@@ -56,6 +56,8 @@ Repeat
 			End Select 
 		Case EVENT_GADGETACTION
 			Select EventSource() ' what triggered it?
+				Case AzWindowColourBtn ' recolour button
+					ChangeColour(True)
 				Case AzWindowDelBtn
 					InstanceMgr.DeleteInstance() ' no we don't need any params.
 				Case AzWindowSizeBtn

@@ -320,6 +320,24 @@ Type InstanceManager Extends AzureWorlds
 		Next
 	End Method
 	
+	Method RecolourInstance(uniqueId:Int=Null) ' merge functions?
+		If uniqueId = Null ' if we want to resize currently selected instance instead of arbitrary instance
+			uniqueId = GetCurrentlySelectedInstance() ' get the currently selected instance
+		EndIf 
+		
+		For InstanceMgr = EachIn AzInstanceList ' loop through every instance...
+			Print(instanceMgr.uniqueId)
+			If InstanceMgr.uniqueId = uniqueId ' if this is the ID we want...
+				WriteLog("Recolouring instance currently with colour " + instanceMgr.colourR + "," + instanceMgr.colourG + "," + instanceMgr.colourR + " to " + RequestedRed() + "," + RequestedGreen() + "," + RequestedBlue(),Syslog)	 
+				instanceMgr.colourR = RequestedRed() ' reuse the current variables for brevity, recolour the block (red)
+				instanceMgr.colourG = RequestedGreen() ' reuse the current variables for brevity, recolour the block (green)
+				instanceMgr.colourB = RequestedBlue() ' reuse the current variables for brevity, recolour the block (blue)
+			EndIf
+		Next
+
+	
+	End Method
+	
 	Method ResizeInstance(uniqueId:Int=Null) ' resize instance
 		 ' hack
 		If uniqueId = Null ' if we want to resize currently selected instance instead of arbitrary instance
@@ -336,6 +354,7 @@ Type InstanceManager Extends AzureWorlds
 		Next
 
 	End Method
+	
 	
 	Method GetCurrentlySelectedInstance() ' gets the index of the currently selected instance.
 		Local index=0 ' index of the part in question to delete

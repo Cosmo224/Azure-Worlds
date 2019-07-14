@@ -1,8 +1,14 @@
 
-Function ChangeColour()
+Function ChangeColour(recolourCurrentlySelectedBrick:Int=False)
 	Local CcRequester = RequestColor(255,255,255)
 	Select CcRequester
 		Case True
+			' if we want to recolour the currently selected block
+			If recolourCurrentlySelectedBrick:Int=True
+				InstanceMgr.RecolourInstance()
+				return
+			EndIf
+			
 			AzCurrentColourR = RequestedRed()
 			AzCurrentColourG = RequestedGreen()
 			AzCurrentColourB = RequestedBlue()
