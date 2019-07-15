@@ -190,7 +190,7 @@ Type AzureWorlds
 		AzWindowDelBtn = CreateButton("Delete",GadgetWidth(AzWindow)/4.499,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Delete button
 		AzWindowSizeBtn = CreateButton("Resize",GadgetWidth(AzWindow)/3.141,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Size button
 		AzWindowColourBtn = CreateButton("Colour",GadgetWidth(AzWindow)/2.4,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Colour button
-		AzWindowEffectBtn = CreateButton("Effects and Style",GadgetWidth(AzWindow)/1.954,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Effects and Style button
+		AzWindowEffectBtn = CreateButton("Effect",GadgetWidth(AzWindow)/1.954,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Effects and Style button
 		AzWindowPropBtn = CreateButton("Properties",GadgetWidth(AzWindow)/1.648,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Properties button
 	End Method
 
@@ -448,7 +448,7 @@ Type InstanceManager Extends AzureWorlds
 
 End Type
 
-'Azure Worlds Instance GFX Manager
+'Azure Worlds Instance GFX Manager (technically there should be two types but who cares)
 Type InstanceGFX Extends InstanceManager
 	Field gfxId:Int ' gfx ID
 	Field gfxName:String ' gfx name
