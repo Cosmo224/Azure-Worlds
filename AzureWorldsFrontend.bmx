@@ -6,6 +6,7 @@ Include "AzureWorldsFrontend_InsertObject.bmx"
 Include "AzureWorldsFrontend_ChangeSize.bmx"
 Include "AzureWorldsFrontend_GameSettings.bmx"
 Include "AzureWorldsFrontend_StylingHandler.bmx"
+Include "AzureWorldsFrontend_ChangeEffect.bmx"
 Global App:AzureWorlds = New AzureWorlds ' instantiate the app
 Global InstanceMgr:InstanceManager = New InstanceManager ' instantiate the instance manager
 'TODO: Get from Config file
@@ -62,6 +63,8 @@ Repeat
 					InstanceMgr.DeleteInstance() ' no we don't need any params.
 				Case AzWindowSizeBtn
 					ChangeSize(True) ' we want to resize the currently selected brick
+				Case AzWindowEffectBtn
+					ObjectEffect() ' you can only change an existing object effect
 			End Select
 		
 	End Select 

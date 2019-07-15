@@ -165,7 +165,6 @@ Type AzureWorlds
 		CreateMenu("Insert Object",202,AzWindowToolsMenu) ' Insert object menu
 		CreateMenu("Colour",203,AzWindowToolsMenu) ' Colour menu
 		CreateMenu("Size",204,AzWindowToolsMenu) ' Size menu
-		CreateMenu("Effect",205,AzWindowToolsMenu) ' Effect menu
 		AzWindowToolsMenuStyleButton = CreateMenu("Style",206,AzWindowToolsMenu) ' Style menu - we need to handle this
 		CreateMenu("",207,AzWindowToolsMenu) ' Dummy menu for divider
 		CreateMenu("Check for Updates",208,AzWindowToolsMenu) ' Check for Updates
@@ -467,7 +466,7 @@ Type InstanceGFX Extends InstanceManager
 			If ExtractExt(currentGfx) = "png" ' load all PNG files ONLY
 				Local gfxInstance:InstanceGFX = New InstanceGFX ' create the gfx
 				
-				WriteLog("Loading GFX @ Engine\Gfx\" + currentGfx + "with ID " + gfxIndex,Syslog) ' log the gfx loading
+				WriteLog("Loading GFX @ Engine\Gfx\" + currentGfx + " with ID " + gfxIndex,Syslog) ' log the gfx loading
 				gfxInstance.gfxId = gfxIndex
 				gfxInstance.gfxName = setupGfxNames(gfxIndex) ' setup the gfx name with the gfx index 
 				gfxInstance.gfxImage = LoadImage(currentGfx) ' load the gfx
