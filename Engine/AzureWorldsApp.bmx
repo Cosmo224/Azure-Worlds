@@ -374,6 +374,17 @@ Type InstanceManager Extends AzureWorlds
 
 	End Method
 	
+	Method ClearAllInstances() ' clear all instances
+		For Local i:InstanceManager = EachIn AzInstanceList ' loop through every instance
+			
+			AzInstanceList.Remove(i) ' remove the instance from the instance list, making it invisible, intangible, and inaccessible but still extant 
+			i=Null ' remove the instance
+		Next
+		AzCurrentUniqueId = 0 ' set the current unique id to 0
+		ClearTreeView AzWindowExplorer ' clear the treeview 
+		Return
+	End Method
+	
 	Method DetermineInstanceParameters:String(instanceId:String) ' this determines the parameters of a brick by their Instance IDs
 		Select instanceId
 			Case 0

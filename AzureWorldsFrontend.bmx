@@ -42,6 +42,8 @@ Repeat
 			EndIf
 		Case EVENT_MENUACTION
 			Select EventData()
+				Case 1
+					InstanceMgr.ClearAllInstances()
 				Case 102
 					GameSettings()
 				Case 202
