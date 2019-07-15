@@ -57,6 +57,8 @@ Repeat
 			End Select 
 		Case EVENT_GADGETACTION
 			Select EventSource() ' what triggered it?
+				Case AzWindowCtiBtn
+					InstanceMgr.SetClickToInsert()
 				Case AzWindowColourBtn ' recolour button
 					ChangeColour(True)
 				Case AzWindowDelBtn

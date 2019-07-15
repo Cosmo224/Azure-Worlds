@@ -4,7 +4,6 @@
 Global Syslog:TStream
 Global Beta:Int
 Global Version:Int=1
-Global AzClickToInsert:Int=1
 Global AzCurrentColourR:Int=255 ' Current colour - R
 Global AzCurrentColourG:Int=255 ' Current colour - G
 Global AzCurrentColourB:Int=255 ' Current colour - B
@@ -18,6 +17,7 @@ Global AzOffsetX:Int=0 ' Offset X for scrolling
 Global AzOffsetY:Int=0 ' Offset Y for scrolling
 Global AzSpeedX:Int=20 ' Scrollspeed X
 Global AzSpeedY:Int=20 ' Scrollspeed Y (this and Scrollspeed X vars placeholder values)
+Global AzClickToInsert:Int=1 ' click-to-insert (are blocks insertable)
 Global AzCurrentStyling:Int=0 ' Current styling
 Global AzGlobalTimer:TTimer ' Timer for running the game
 Global AzGfxList:TList ' list of strings holding the path to every GFX in the Gfx/ foider
@@ -285,24 +285,26 @@ Type InstanceManager Extends AzureWorlds
 	Field physEnabled ' Super-Shit" Physics Engine Enabled
 	
 	Method InsertInstance:InstanceManager(instanceId,posX,posY,sizeX,sizeY,colourR,colourG,colourB,gridSize,styling)
-		Local insMan:InstanceManager = New InstanceManager
-		insMan.instanceId = AzCurrentInstanceId
-		insMan.posX = RoundPos(posX,gridSize) ' round x to the grid size
-		insMan.posY = RoundPos(posY,gridSize) ' round y to the grid size
-		insMan.sizeX = sizeX
-		insMan.sizeY = sizeY
-		insMan.colourR = colourR
-		insMan.colourG = colourG
-		insMan.colourB = colourB
-		insMan.gridSize = gridSize
-		insMan.styling = styling
-		AzCurrentUniqueId = AzCurrentUniqueId + 1
-		insMan.uniqueId = AzCurrentUniqueId 
-		insMan.instanceIdDescription = insMan.DetermineInstanceParameters(instanceId) ' description of the InstanceID 
-		AzInstanceList.AddLast(insMan) ' add this to the list of instances
-		AzRegisterTreeView(insMan.instanceId,insMan.uniqueId)
+		If AzClickToInsert = 1 ' if click-to-insert is on (lazy btw)
+			Local insMan:InstanceManager = New InstanceManager
+			insMan.instanceId = AzCurrentInstanceId
+			insMan.posX = RoundPos(posX,gridSize) ' round x to the grid size
+			insMan.posY = RoundPos(posY,gridSize) ' round y to the grid size
+			insMan.sizeX = sizeX
+			insMan.sizeY = sizeY
+			insMan.colourR = colourR
+			insMan.colourG = colourG
+			insMan.colourB = colourB
+			insMan.gridSize = gridSize
+			insMan.styling = styling
+			AzCurrentUniqueId = AzCurrentUniqueId + 1
+			insMan.uniqueId = AzCurrentUniqueId 
+			insMan.instanceIdDescription = insMan.DetermineInstanceParameters(instanceId) ' description of the InstanceID 
+			AzInstanceList.AddLast(insMan) ' add this to the list of instances
+			AzRegisterTreeView(insMan.instanceId,insMan.uniqueId)
+		
 		Return insMan ' return insMan
-
+		EndIf
 	End Method
 	
 	Method DeleteInstance() ' delete instance 
@@ -384,6 +386,19 @@ Type InstanceManager Extends AzureWorlds
 		Return instanceIdDescription
 	End Method 
 		
+	Method SetClickToInsert() ' sets the click to insert feature status - on or off 
+		Select AzClickToInsert ' click-to-insert select
+			Case 0 ' is it off?
+				AzClickToInsert = 1 ' is azclicktoinsert off? then turn it on!
+				SetGadgetText AzWindowCtiBtn,"Click-to-Insert: On" ' change text to match
+				Return
+			Case 1
+				AzClickToInsert = 0 ' is azclicktoinsert on? then turn it off!
+				SetGadgetText AzWindowCtiBtn,"Click-to-Insert: Off"
+				Return 
+		End Select
+	End Method
+	
 	Method RoundPos(x#,m#)
 		If m < 0.0
 			 m = -m
