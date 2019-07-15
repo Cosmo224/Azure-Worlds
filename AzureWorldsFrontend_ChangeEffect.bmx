@@ -19,7 +19,14 @@ Function ObjectEffect()
 			Case EVENT_GADGETACTION
 				Select EventSource()
 					Case OeDropdown
-						AzCurrentInstanceId = EventData()					
+						Local uniqueId = InstanceMgr.GetCurrentlySelectedInstance() ' get the currently selected instance id
+						Local gfxId = EventData() ' get the event data to change the brick fx to
+						For InstanceMgr:InstanceManager = EachIn AzInstanceList ' loop through every instance
+							If InstanceMgr.uniqueId = uniqueId ' if we get the current unique id
+								InstanceMgr.fx = EventData()
+								
+							EndIf
+						Next				
 					Case OeOk ' exit!
 						FreeGadget OeWindow 'remove the window and all of its children
 						Return ' return because we selected something
