@@ -277,7 +277,7 @@ Type InstanceManager Extends AzureWorlds
 	Field uniqueId ' unique ID of the brick
 	Field gridSize ' grid size of the brick
 	Field styling ' styling of the brick
-	Field fx ' BrickFX(tm)
+	Field fx=Null ' BrickFX(tm)
 	Field scoreBonus ' score given
 	Field timeBonus ' time given
 	Field bonusBonus ' bonus given
