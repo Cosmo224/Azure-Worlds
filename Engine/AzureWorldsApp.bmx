@@ -430,6 +430,17 @@ Type InstanceManager Extends AzureWorlds
 				Default
 					App.HandleError(4,"Attemped to insert brick with nonexistent style ID.",2,0)
 			End Select ' todo: add var 
+			' draw the GFX
+
+			Select InstanceMgr.fx
+				Case Null ' if we didn't select an effect...
+				Default
+					For Local InstanceGFX:InstanceGFX = EachIn AzGfxList ' loop through every effect...
+						If InstanceGFX.GfxId = InstanceMgr.fx ' if the GfxId is equal to the fx that we want...
+							DrawImage InstanceGFX.gfxImage, InstanceMgr.posX - AzOffsetX, InstanceMgr.posY ' draw the effect 
+						EndIf
+					Next
+			End Select
 		SetColor 255,255,255 ' restore colour
 	Next
 	If AzDebugDisplay = 1 ' if debug display is on
@@ -460,7 +471,7 @@ Type InstanceGFX Extends InstanceManager
 			HandleError(7,"Failed to read Gfx folder",1,0) ' throw an error and crash
 		EndIf
 		Local currentGfx:String ' current file to load
-		Local gfxIndex:Int=0 ' gfx Id to isnert
+		Local gfxIndex:Int=1 ' gfx Id to insert (YES, ONE-BASED BECAUSE APPARENTLY NULL AND ZERO ARE THE SAME GOD DAMN THING, 0=no effect)
 		Repeat
 			currentGfx = NextFile(gfxFolder) ' loop through every file in the folder
 			If ExtractExt(currentGfx) = "png" ' load all PNG files ONLY
@@ -469,7 +480,7 @@ Type InstanceGFX Extends InstanceManager
 				WriteLog("Loading GFX @ Engine\Gfx\" + currentGfx + " with ID " + gfxIndex,Syslog) ' log the gfx loading
 				gfxInstance.gfxId = gfxIndex
 				gfxInstance.gfxName = setupGfxNames(gfxIndex) ' setup the gfx name with the gfx index 
-				gfxInstance.gfxImage = LoadImage(currentGfx) ' load the gfx
+				gfxInstance.gfxImage = LoadImage("Engine\Gfx\" + currentGfx) ' load the gfx
 				AzGfxList.AddLast(gfxInstance) ' add the gfx to the list
 				gfxIndex = gfxIndex + 1 ' increment 1 to gfxIndex
 			EndIf 
@@ -479,8 +490,10 @@ Type InstanceGFX Extends InstanceManager
 	Method setupGfxNames:String(gfxId) ' setup the gfx names - this will be called with gfxIndex
 			Local gfxName:String 'the name of the gfx
 			Select gfxId
-				Case 0 ' gfxId 0
+				Case 1 ' gfxId 0
 					gfxName = "Test Graphical FX"
+				Case 2
+					gfxName = "Test Graphical FX II"
 			End Select
 			
 			Return gfxName ' return the gfxName
