@@ -21,6 +21,7 @@ Global AzSpeedY:Int=20 ' Scrollspeed Y (this and Scrollspeed X vars placeholder 
 Global AzCurrentStyling:Int=0 ' Current styling
 Global AzGlobalTimer:TTimer ' Timer for running the game
 Global AzGfxList:TList ' list of strings holding the path to every GFX in the Gfx/ foider
+Global AzGfxManager:InstanceGFX = New InstanceGFX ' GFX Manager
 Global AzInstanceList:TList
 Global AzInstanceIdList:TList ' hack
 Global AzWorldSizeX:Int ' World size X - integrate?
@@ -93,8 +94,8 @@ Type AzureWorlds
 		WriteLog("Destroying image..",Syslog)
 		introImage = Null ' destroy the image
 		InitAzGui(AppTtl,x,y,canvasSzX,canvasSzY) ' initalize GUI
-		WriteLog("Loading GFX...",Syslog)
-		InstanceMgr.LoadInstanceGFX()
+		WriteLog("Initalising GFX Manager...",Syslog)
+		AzGfxManager.LoadInstanceGFX()
 		AzToolVisibility(1,0,0,0,0,0) ' set tool visibility to 1,0,0,0,0,0 as we dont need the rest
 		AzInitInstanceIdList(AzInstanceIdList) ' initalize the instanceid list
 		WriteLog("Init done.",Syslog)
@@ -180,7 +181,7 @@ Type AzureWorlds
 		UpdateWindowMenu AzWindow ' update the window menu
 		
 		' Explorer
-		AzWindowExplorer = CreateTreeView(canvasSzX + 4,28,GadgetWidth(AzWindow) - canvasSzX - 12,GadgetHeight(AzWindow) - 100,AzWindow) ' Explorer - where the bricks are!
+		AzWindowExplorer = CreateTreeView(canvasSzX + 4,28,GadgetWidth(AzWindow) - canvasSzX - 30,GadgetHeight(AzWindow) - 125,AzWindow) ' Explorer - where the bricks are!
 		AzWindowExplorerRoot = TreeViewRoot(AzWindowExplorer) ' Root handle for adding shit
 		CreateLabel("Explorer: ",canvasSzX + 4,0,96,24,AzWindow) ' create the label 
 		AzWindowToolStrip = CreateLabel("Brick Tools: ",4,canvasSzY + 4,96,24,AzWindow) ' Tool strip label
@@ -383,25 +384,7 @@ Type InstanceManager Extends AzureWorlds
 		End Select
 		Return instanceIdDescription
 	End Method 
-	
-	' Transparent, Light Graphical FX Manager
-	Method LoadInstanceGFX() ' load GFX
-		Local gfxFolder:Byte Ptr = ReadDir("Engine\Gfx\") ' read every file in the Gfx\ folder - todo: use variable...
 		
-		If gfxFolder=0
-			HandleError(7,"Failed to read Gfx folder",1,0) ' throw an error and crash
-		EndIf
-		Local currentGfx:String ' current file to load
-		Repeat
-			currentGfx = NextFile(gfxFolder) ' loop through every file in the folder
-			If ExtractExt(currentGfx) = "png" ' load all PNG files ONLY
-				WriteLog("Loading GFX @ Engine\Gfx\" + currentGfx) ' load all gfxs
-				Local gfx:TImage = LoadImage(currentGfx) 
-				AzGfxList.AddLast(gfx) ' add the gfx to the list
-			EndIf 
-		Until currentGfx = "" ' stupid legacy Blitz3D style APIs...I want to use EachIn!
-	End Method
-	
 	Method RoundPos(x#,m#)
 		If m < 0.0
 			 m = -m
@@ -464,6 +447,45 @@ Type InstanceManager Extends AzureWorlds
 	End Method
 
 
+End Type
+
+'Azure Worlds Instance GFX Manager
+Type InstanceGFX Extends InstanceManager
+	Field gfxId:Int ' gfx ID
+	Field gfxName:String ' gfx name
+	Field gfxImage:TImage ' gfx image - we don't even need to store the url!
+	Method LoadInstanceGFX() ' load GFX
+		Local gfxFolder:Byte Ptr = ReadDir("Engine\Gfx\") ' read every file in the Gfx\ folder - todo: use variable...
+		
+		If gfxFolder=0
+			HandleError(7,"Failed to read Gfx folder",1,0) ' throw an error and crash
+		EndIf
+		Local currentGfx:String ' current file to load
+		Local gfxIndex:Int=0 ' gfx Id to isnert
+		Repeat
+			currentGfx = NextFile(gfxFolder) ' loop through every file in the folder
+			If ExtractExt(currentGfx) = "png" ' load all PNG files ONLY
+				Local gfxInstance:InstanceGFX = New InstanceGFX ' create the gfx
+				
+				WriteLog("Loading GFX @ Engine\Gfx\" + currentGfx + "with ID " + gfxIndex,Syslog) ' log the gfx loading
+				gfxInstance.gfxId = gfxIndex
+				gfxInstance.gfxName = setupGfxNames(gfxIndex) ' setup the gfx name with the gfx index 
+				gfxInstance.gfxImage = LoadImage(currentGfx) ' load the gfx
+				AzGfxList.AddLast(gfxInstance) ' add the gfx to the list
+				gfxIndex = gfxIndex + 1 ' increment 1 to gfxIndex
+			EndIf 
+		Until currentGfx = "" ' stupid legacy Blitz3D style APIs...I want to use EachIn!
+	End Method
+
+	Method setupGfxNames:String(gfxId) ' setup the gfx names - this will be called with gfxIndex
+			Local gfxName:String 'the name of the gfx
+			Select gfxId
+				Case 0 ' gfxId 0
+					gfxName = "Test Graphical FX"
+			End Select
+			
+			Return gfxName ' return the gfxName
+	End Method 
 End Type
 
 
