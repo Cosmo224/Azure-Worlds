@@ -23,8 +23,8 @@ Global AzGlobalTimer:TTimer ' Timer for running the game
 Global AzGfxList:TList ' list of strings holding the path to every GFX in the Gfx/ foider
 Global AzGfxManager:InstanceGFX = New InstanceGFX ' GFX Manager
 Global AzInstanceList:TList
-Global AzInstanceIdList:TList ' hack
-Global AzCurrentFile:Int=Null ' savecurrent filed
+Global AzInstanceIdList:TList ' instanceid list (hack?)
+Global AzCurrentFile:String=Null ' savecurrent filed
 Global AzFileFormatVersion:Int=1
 Global AzWorldSizeX:Int ' World size X - integrate?
 Global AzWorldSizeY:Int
@@ -508,7 +508,12 @@ Type InstanceManager Extends AzureWorlds
 	'AZSave
 	
 	Method SaveInstancesToFile() ' save to file
-		Local fileName:String=RequestFile("Save World","Azure Worlds World:azw",True)
+		Local fileName:String
+		If AzCurrentFile = Null ' if a file isn't open
+			fileName=RequestFile("Save World","Azure Worlds World:azw",True)
+		Else
+			fileName = AzCurrentFile ' set the current file to AzCurrentFile
+		EndIf
 		WriteLog("Saving file at..." + fileName,Syslog)
 		CreateFile fileName ' create the file
 		Local fileStream:TStream = OpenStream(fileName) ' open a stream of the file
@@ -547,14 +552,20 @@ Type InstanceManager Extends AzureWorlds
 		Next
 		WriteString(fileStream,"Sad..EOF")
 		CloseStream fileStream ' buffer changes to file and close the stream
+		
+		AzCurrentFile = fileName ' set the filename 
+		
+		SetGadgetText AzWindow, GadgetText(AzWindow) + " [" + AzCurrentFile + "]" ' gadget text
+		Return
 	End Method
 	
 	Method LoadInstancesFromFile() ' load from file	
+	
 		Local fileName:String=RequestFile("Open World","Azure Worlds World:azw",False)
 		Local fileStream:TStream=OpenStream(fileName) ' open the file for loading...
 		WriteLog("Opening file at " + fileName,Syslog) ' log the action
 		Local fileHeader:String = ReadString(fileStream,3) ' read 3 bytes of the file as a string (header)
-		WriteLog("File header: " + fileHeader) ' WriteLog the file header
+		WriteLog("File header: " + fileHeader,Syslog) ' WriteLog the file header
 		If fileHeader <> "AZW" ' invalid header
 			HandleError(8,"File is not an Azure Worlds file, or very badly corrupted.",0,0)
 			fileStream=Null ' null the stream
@@ -574,28 +585,26 @@ Type InstanceManager Extends AzureWorlds
 			fileStream = Null ' destroy the stream
 			Return  ' abort load
 		EndIf
-		WriteLog("Azure Worlds version the file was saved in: " + fileAzVersion)
-		WriteLog("File format version the file was saved in: " + fileAzFileVersion)
+		WriteLog("Azure Worlds version the file was saved in: " + fileAzVersion,Syslog)
+		WriteLog("File format version the file was saved in: " + fileAzFileVersion,Syslog)
 		Local AzTimestamp:String = ReadLine(fileStream) ' read the line - timestamp so we ignore
-		WriteLog("Timestamp: " + AzTimestamp) ' WriteLog the timestamp for debug purposes
-		WriteLog(ReadString(fileStream,8)) ' read an 8-byte string for the settings block
+		WriteLog("Timestamp: " + AzTimestamp,Syslog) ' WriteLog the timestamp for debug purposes
+		ReadString(fileStream,8) ' read an 8-byte string for the settings block
 		AzWorldSizeX:Int = ReadInt(fileStream) ' read the world size x as the int
-		WriteLog("World size: " + AzWorldSizeX) ' WriteLog the world size
+		WriteLog("World size: " + AzWorldSizeX,Syslog) ' WriteLog the world size
 		InstanceMgr.ClearAllInstances() ' clear all instances
 		For Local i = 1 To 8
 			ReadInt(fileStream)
-			
 		Next 'read the placeholders
 		ReadLine(fileStream) ' read the dummy line
 		
-		WriteLog("reading...")
+		WriteLog("Reading Instances...",Syslog)
+		Local savInstanceMarker ' variable scope workaround
 		Repeat
 			Local savInstanceMarker:String = ReadString(fileStream,8) ' read instance string
-			WriteLog(savInstanceMarker)
-			If savInstanceMarker = "Sad..EOF" ' end of file hit?
-				Exit ' loading done, so exit
+			If savInstanceMarker = "Sad..EOF"
+				Exit  ' we need to do this
 			EndIf
-			WriteLog("reading...")
 			Local savInstanceId = ReadInt(fileStream) ' read the instance id
 			Local savUniqueId = ReadInt(fileStream) ' read the unique id
 			Local savPosX = ReadInt(fileStream) ' read the pos x
