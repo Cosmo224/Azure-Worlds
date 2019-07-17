@@ -596,22 +596,22 @@ Type InstanceManager Extends AzureWorlds
 				Exit ' loading done, so exit
 			EndIf
 			WriteLog("reading...")
-			Local savInstanceId = ReadInt(fileStream)
-			Local savUniqueId = ReadInt(fileStream)
-			Local savPosX = ReadInt(fileStream)
-			Local savPosY = ReadInt(fileStream)
-			Local savColourR = ReadInt(fileStream)
-			Local savColourG = ReadInt(fileStream)
-			Local savColourB = ReadInt(fileStream)
-			Local savSizeX = ReadInt(fileStream)
-			Local savSizeY = ReadInt(fileStream)
-			Local savStyling = ReadInt(fileStream)
-			Local savFx = ReadInt(fileStream)
-			Local savScoreBonus = ReadInt(fileStream)
-			Local savTimeBonus = ReadInt(fileStream)
-			Local savBonusBonus = ReadInt(fileStream)
-			Local savWinGiven = ReadInt(fileStream)
-			Local savPhysEnabled = ReadInt(fileStream)
+			Local savInstanceId = ReadInt(fileStream) ' read the instance id
+			Local savUniqueId = ReadInt(fileStream) ' read the unique id
+			Local savPosX = ReadInt(fileStream) ' read the pos x
+			Local savPosY = ReadInt(fileStream) ' read the pos y
+			Local savColourR = ReadInt(fileStream) ' read the colour r
+			Local savColourG = ReadInt(fileStream) ' read the colour g
+			Local savColourB = ReadInt(fileStream) ' read the colour b
+			Local savSizeX = ReadInt(fileStream) ' read the size x
+			Local savSizeY = ReadInt(fileStream) ' read the size y
+			Local savStyling = ReadInt(fileStream) ' read the styling
+			Local savFx = ReadInt(fileStream) ' read the fx
+			Local savScoreBonus = ReadInt(fileStream) ' read score bonus
+			Local savTimeBonus = ReadInt(fileStream) ' read time bonus
+			Local savBonusBonus = ReadInt(fileStream) ' read bonus bonus
+			Local savWinGiven = ReadInt(fileStream) ' read win given
+			Local savPhysEnabled = ReadInt(fileStream) ' read phys enabled
 			InstanceMgr.InsertInstance(savInstanceId,savPosX,savPosY,savSizeX,savSizeY,savColourR,savColourG,savColourB,AzCurrentGridSize,savStyling)
 		Forever
 	
