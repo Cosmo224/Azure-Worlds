@@ -386,7 +386,6 @@ Type InstanceManager Extends AzureWorlds
 
 	End Method
 	
-	
 	Method GetCurrentlySelectedInstance() ' gets the index of the currently selected instance.
 		Local index=0 ' index of the part in question to delete
 		For Local n:TGadget = EachIn AzWindowExplorerList ' go thru everything
@@ -478,7 +477,7 @@ Type InstanceManager Extends AzureWorlds
 				Case 1
 				
 				Default
-					App.HandleError(4,"Attemped to insert brick with nonexistent style ID.",2,0)
+					App.HandleError(4,"Attempted to insert brick with nonexistent style ID.",2,0)
 			End Select ' todo: add var 
 			' draw the GFX
 
@@ -510,12 +509,15 @@ Type InstanceManager Extends AzureWorlds
 	
 	Method SaveInstancesToFile() ' save to file
 		Local fileName:String=RequestFile("Save World","Azure Worlds World:azw",True)
+		WriteLog("Saving file at..." + fileName,Syslog)
 		CreateFile fileName ' create the file
 		Local fileStream:TStream = OpenStream(fileName) ' open a stream of the file
+		WriteLog("Writing header...",Syslog)
 		WriteString(fileStream,"AZW") 'azure worlds 
 		WriteInt(fileStream,Version) 'write the Azure Worlds version
 		WriteInt(fileStream,AzFileFormatVersion) 'write the file format version
 		WriteLine(fileStream,CurrentDate() + " " + CurrentTime()) ' timestamp
+		WriteLog("Writing SETTINGS block...",Syslog)
 		WriteString(fileStream,"SETTINGS")
 		WriteInt(fileStream,AzWorldSizeX)
 		' RESERVED: Settings
@@ -523,6 +525,7 @@ Type InstanceManager Extends AzureWorlds
 			WriteInt(fileStream,0)
 		Next
 		WriteLine(fileStream,"") ' dummy line
+		WriteLog("Writing instance information...",Syslog)
 		For InstanceMgr = EachIn AzInstanceList ' go through every file...
 			WriteString(fileStream,"INSTANCE") ' write INSTANCE string
 			WriteInt(fileStream,InstanceMgr.instanceId) ' write instance id to file
@@ -532,6 +535,8 @@ Type InstanceManager Extends AzureWorlds
 			WriteInt(fileStream,InstanceMgr.colourR) ' write colour r to file
 			WriteInt(fileStream,InstanceMgr.colourG) ' write colour g to file
 			WriteInt(fileStream,InstanceMgr.colourB) ' write colour b to file
+			WriteInt(fileStream,InstanceMgr.sizeX) ' write size x to file
+			WriteInt(fileStream,InstanceMgr.sizeY) ' write size y to file
 			WriteInt(fileStream,InstanceMgr.styling) ' write styling to file
 			WriteInt(fileStream,InstanceMgr.fx) ' write fx to file
 			WriteInt(fileStream,InstanceMgr.scoreBonus) ' write score bonus to file
@@ -539,14 +544,79 @@ Type InstanceManager Extends AzureWorlds
 			WriteInt(fileStream,InstanceMgr.bonusBonus) ' write bonus to file
 			WriteInt(fileStream,InstanceMgr.winGiven) ' write win given to file
 			WriteInt(fileStream,InstanceMgr.physEnabled) ' write phys enabled to file
-			
 		Next
-		WriteLine(fileStream,"EOF") ' eof marker
+		WriteString(fileStream,"Sad..EOF")
 		CloseStream fileStream ' buffer changes to file and close the stream
 	End Method
 	
 	Method LoadInstancesFromFile() ' load from file	
+		Local fileName:String=RequestFile("Open World","Azure Worlds World:azw",False)
+		Local fileStream:TStream=OpenStream(fileName) ' open the file for loading...
+		WriteLog("Opening file at " + fileName,Syslog) ' log the action
+		Local fileHeader:String = ReadString(fileStream,3) ' read 3 bytes of the file as a string (header)
+		WriteLog("File header: " + fileHeader) ' WriteLog the file header
+		If fileHeader <> "AZW" ' invalid header
+			HandleError(8,"File is not an Azure Worlds file, or very badly corrupted.",0,0)
+			fileStream=Null ' null the stream
+			Return  ' return
+		EndIf
+		Local fileAzVersion:Int = ReadInt(fileStream) ' read int (azure worlds version)
+		Local fileAzFileVersion:Int = ReadInt(fileStream) ' read int (file format version)
+		If fileAzVersion <> Version ' if the file was saved in a different version of azure worlds than it's being loaded in 
+			Local errorResult = HandleError(9,"This file was created in Azure Worlds version " + fileAzVersion + ". Loading it in the current version " + Version + "may cause problems. Are you sure?",0,1) ' error 9
+			If errorResult = False
+				fileStream = Null
+				Return ' return and abort load
+			EndIf' if the user aborted load
+		EndIf 
+		If fileAzFileVersion <> AzFileFormatVersion ' if the file format version is different
+			HandleError(10,"This file was created using a version of Azure Worlds (" + fileAzVersion + ") that uses a different, and incompatible, earlier or later version of the file format. This file cannot be loaded.",0,0)
+			fileStream = Null ' destroy the stream
+			Return  ' abort load
+		EndIf
+		WriteLog("Azure Worlds version the file was saved in: " + fileAzVersion)
+		WriteLog("File format version the file was saved in: " + fileAzFileVersion)
+		Local AzTimestamp:String = ReadLine(fileStream) ' read the line - timestamp so we ignore
+		WriteLog("Timestamp: " + AzTimestamp) ' WriteLog the timestamp for debug purposes
+		WriteLog(ReadString(fileStream,8)) ' read an 8-byte string for the settings block
+		AzWorldSizeX:Int = ReadInt(fileStream) ' read the world size x as the int
+		WriteLog("World size: " + AzWorldSizeX) ' WriteLog the world size
+		InstanceMgr.ClearAllInstances() ' clear all instances
+		For Local i = 1 To 8
+			ReadInt(fileStream)
+			
+		Next 'read the placeholders
+		ReadLine(fileStream) ' read the dummy line
+		
+		WriteLog("reading...")
+		Repeat
+			Local savInstanceMarker:String = ReadString(fileStream,8) ' read instance string
+			WriteLog(savInstanceMarker)
+			If savInstanceMarker = "Sad..EOF" ' end of file hit?
+				Exit ' loading done, so exit
+			EndIf
+			WriteLog("reading...")
+			Local savInstanceId = ReadInt(fileStream)
+			Local savUniqueId = ReadInt(fileStream)
+			Local savPosX = ReadInt(fileStream)
+			Local savPosY = ReadInt(fileStream)
+			Local savColourR = ReadInt(fileStream)
+			Local savColourG = ReadInt(fileStream)
+			Local savColourB = ReadInt(fileStream)
+			Local savSizeX = ReadInt(fileStream)
+			Local savSizeY = ReadInt(fileStream)
+			Local savStyling = ReadInt(fileStream)
+			Local savFx = ReadInt(fileStream)
+			Local savScoreBonus = ReadInt(fileStream)
+			Local savTimeBonus = ReadInt(fileStream)
+			Local savBonusBonus = ReadInt(fileStream)
+			Local savWinGiven = ReadInt(fileStream)
+			Local savPhysEnabled = ReadInt(fileStream)
+			InstanceMgr.InsertInstance(savInstanceId,savPosX,savPosY,savSizeX,savSizeY,savColourR,savColourG,savColourB,AzCurrentGridSize,savStyling)
+		Forever
+	
 	End Method
+
 
 End Type
 
