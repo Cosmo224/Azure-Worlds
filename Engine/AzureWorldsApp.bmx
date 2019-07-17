@@ -24,6 +24,7 @@ Global AzGfxList:TList ' list of strings holding the path to every GFX in the Gf
 Global AzGfxManager:InstanceGFX = New InstanceGFX ' GFX Manager
 Global AzInstanceList:TList
 Global AzInstanceIdList:TList ' hack
+Global AzCurrentFile:Int=Null ' savecurrent filed
 Global AzWorldSizeX:Int ' World size X - integrate?
 Global AzWorldSizeY:Int
 Global AzWindowExplorerList:TList ' you can do this
@@ -482,6 +483,14 @@ Type InstanceManager Extends AzureWorlds
 	
 	End Method
 
+	'AZSave
+	
+	Method SaveInstancesToFile() ' save to file
+		
+	End Method
+	
+	Method LoadInstancesFromFile() ' load from file	
+	End Method
 
 End Type
 
@@ -524,6 +533,7 @@ Type InstanceGFX Extends InstanceManager
 			
 			Return gfxName ' return the gfxName
 	End Method 
+	
 End Type
 
 
