@@ -261,6 +261,29 @@ Type AzureWorlds
 			AzToolVisibility(1,0,0,0,0,0) ' all except click to insert tool invisible
 		EndIf
 	End Method
+	
+	Method Close() 'close app
+		WriteLog("Exiting...",Syslog)
+		WriteLog("Deinitalizing GFX List...",Syslog)
+		AzGfxList=Null ' deinitalize AzGfxList
+		WriteLog("Deinitalizing Instance ID List...",Syslog)
+		AzInstanceIdList=Null ' deinitalize AzInstanceIdList
+		WriteLog("Clearing all instances...",Syslog)
+		InstanceMgr.ClearAllInstances() ' clear all instances
+		WriteLog("Deinitalizing Explorer Node List...",Syslog)
+		AzWindowExplorerList=Null 
+		WriteLog("Deinitalizing Instance List...",Syslog)
+		AzInstanceList=Null
+		WriteLog("Deinitalizing GFX Manager...",Syslog)
+		AzGfxManager=Null
+		WriteLog("Deinitalizing Instance Manager...",Syslog)
+		InstanceMgr=Null
+		WriteLog("Closing window...",Syslog)
+		FreeGadget AzWindow
+		CloseStream Syslog
+		End
+		
+	End Method
 End Type
 
 ' Azure Worlds Instance Manager

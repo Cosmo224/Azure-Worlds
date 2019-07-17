@@ -17,8 +17,7 @@ Repeat
 		Case EVENT_WINDOWCLOSE ' application wants to close...
 			Select EventSource() ' select the source
 				Case AzWindow
-					FreeGadget AzWindow
-					End ' exit  
+					App.Close() ' exit  
 			End Select
 		Case EVENT_TIMERTICK ' Idle
 
@@ -44,6 +43,12 @@ Repeat
 			Select EventData()
 				Case 1
 					InstanceMgr.ClearAllInstances()
+				Case 2
+					InstanceMgr.LoadInstancesFromFile()
+				Case 3,4
+					InstanceMgr.SaveInstancesToFile()
+				Case 7
+					App.Close()
 				Case 102
 					GameSettings()
 				Case 202
