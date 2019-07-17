@@ -327,7 +327,6 @@ Type InstanceManager Extends AzureWorlds
 			insMan.instanceIdDescription = insMan.DetermineInstanceParameters(instanceId) ' description of the InstanceID 
 			AzInstanceList.AddLast(insMan) ' add this to the list of instances
 			AzRegisterTreeView(insMan.instanceId,insMan.uniqueId)
-		
 		Return insMan ' return insMan
 		EndIf
 	End Method
@@ -517,12 +516,32 @@ Type InstanceManager Extends AzureWorlds
 		WriteInt(fileStream,Version) 'write the Azure Worlds version
 		WriteInt(fileStream,AzFileFormatVersion) 'write the file format version
 		WriteLine(fileStream,CurrentDate() + " " + CurrentTime()) ' timestamp
+		WriteString(fileStream,"SETTINGS")
+		WriteInt(fileStream,AzWorldSizeX)
 		' RESERVED: Settings
 		For Local i:Int = 1 To 8 ' space reserved for settings
-		WriteInt(fileStream,0)
+			WriteInt(fileStream,0)
 		Next
-		
-		
+		WriteLine(fileStream,"") ' dummy line
+		For InstanceMgr = EachIn AzInstanceList ' go through every file...
+			WriteString(fileStream,"INSTANCE") ' write INSTANCE string
+			WriteInt(fileStream,InstanceMgr.instanceId) ' write instance id to file
+			WriteInt(fileStream,InstanceMgr.uniqueId) ' write unique id to file
+			WriteInt(fileStream,InstanceMgr.posX) ' write pos x to file
+			WriteInt(fileStream,InstanceMgr.posY) ' write pos y to file
+			WriteInt(fileStream,InstanceMgr.colourR) ' write colour r to file
+			WriteInt(fileStream,InstanceMgr.colourG) ' write colour g to file
+			WriteInt(fileStream,InstanceMgr.colourB) ' write colour b to file
+			WriteInt(fileStream,InstanceMgr.styling) ' write styling to file
+			WriteInt(fileStream,InstanceMgr.fx) ' write fx to file
+			WriteInt(fileStream,InstanceMgr.scoreBonus) ' write score bonus to file
+			WriteInt(fileStream,InstanceMgr.timeBonus) ' write time bonus to file
+			WriteInt(fileStream,InstanceMgr.bonusBonus) ' write bonus to file
+			WriteInt(fileStream,InstanceMgr.winGiven) ' write win given to file
+			WriteInt(fileStream,InstanceMgr.physEnabled) ' write phys enabled to file
+			
+		Next
+		WriteLine(fileStream,"EOF") ' eof marker
 		CloseStream fileStream ' buffer changes to file and close the stream
 	End Method
 	
