@@ -25,6 +25,7 @@ Global AzGfxManager:InstanceGFX = New InstanceGFX ' GFX Manager
 Global AzInstanceList:TList
 Global AzInstanceIdList:TList ' hack
 Global AzCurrentFile:Int=Null ' savecurrent filed
+Global AzFileFormatVersion:Int=1
 Global AzWorldSizeX:Int ' World size X - integrate?
 Global AzWorldSizeY:Int
 Global AzWindowExplorerList:TList ' you can do this
@@ -509,7 +510,20 @@ Type InstanceManager Extends AzureWorlds
 	'AZSave
 	
 	Method SaveInstancesToFile() ' save to file
+		Local fileName:String=RequestFile("Save World","Azure Worlds World:azw",True)
+		CreateFile fileName ' create the file
+		Local fileStream:TStream = OpenStream(fileName) ' open a stream of the file
+		WriteString(fileStream,"AZW") 'azure worlds 
+		WriteInt(fileStream,Version) 'write the Azure Worlds version
+		WriteInt(fileStream,AzFileFormatVersion) 'write the file format version
+		WriteLine(fileStream,CurrentDate() + " " + CurrentTime()) ' timestamp
+		' RESERVED: Settings
+		For Local i:Int = 1 To 8 ' space reserved for settings
+		WriteInt(fileStream,0)
+		Next
 		
+		
+		CloseStream fileStream ' buffer changes to file and close the stream
 	End Method
 	
 	Method LoadInstancesFromFile() ' load from file	
