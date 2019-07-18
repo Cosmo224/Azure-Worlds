@@ -7,6 +7,7 @@ Include "AzureWorldsFrontend_ChangeSize.bmx"
 Include "AzureWorldsFrontend_GameSettings.bmx"
 Include "AzureWorldsFrontend_StylingHandler.bmx"
 Include "AzureWorldsFrontend_ChangeEffect.bmx"
+Include "AzureWorldsFrontend_BrickProperties.bmx"
 Global App:AzureWorlds = New AzureWorlds ' instantiate the app
 Global InstanceMgr:InstanceManager = New InstanceManager ' instantiate the instance manager
 'TODO: Get from Config file
@@ -74,6 +75,8 @@ Repeat
 					ChangeSize(True) ' we want to resize the currently selected brick
 				Case AzWindowEffectBtn
 					ObjectEffect() ' you can only change an existing object effect
+				Case AzWindowPropBtn
+					BrickProperties() ' part properties
 			End Select
 		
 	End Select 

@@ -561,7 +561,7 @@ Type InstanceManager Extends AzureWorlds
 	
 	Method LoadInstancesFromFile() ' load from file	
 	
-		Local fileName:String=RequestFile("Open World","Azure Worlds World:azw",False)
+		Local fileName:String=RequestFile("Open World","Azure Worlds World:azw",False) ' request a file for loading
 		Local fileStream:TStream=OpenStream(fileName) ' open the file for loading...
 		WriteLog("Opening file at " + fileName,Syslog) ' log the action
 		Local fileHeader:String = ReadString(fileStream,3) ' read 3 bytes of the file as a string (header)
