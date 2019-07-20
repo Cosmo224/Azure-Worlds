@@ -10,7 +10,6 @@ Function BrickProperties()
 	Local BpPhysEnabled:TGadget = CreateButton("Physics Enabled",119,144,60,24,BpWindow,BUTTON_CHECKBOX) ' is physics enabled?
 	Local BpStylingTrigger:TGadget = CreateLabel("Under Construction",4,180,244,24,BpWindow) ' Selection dropdown
 	Local BpOk:TGadget = CreateButton("OK",269,290,64,24,BpWindow) ' OK button
-	
 	Repeat
 		Select WaitEvent()
 			Case EVENT_WINDOWCLOSE ' Player wants to exit out

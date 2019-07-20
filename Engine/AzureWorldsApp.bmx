@@ -621,12 +621,23 @@ Type InstanceManager Extends AzureWorlds
 			Local savBonusBonus = ReadInt(fileStream) ' read bonus bonus
 			Local savWinGiven = ReadInt(fileStream) ' read win given
 			Local savPhysEnabled = ReadInt(fileStream) ' read phys enabled
-			InstanceMgr.InsertInstance(savInstanceId,savPosX,savPosY,savSizeX,savSizeY,savColourR,savColourG,savColourB,AzCurrentGridSize,savStyling)
+			InstanceMgr.InsertInstance(savInstanceId,savPosX,savPosY,savSizeX,savSizeY,savColourR,savColourG,savColourB,AzCurrentGridSize,savStyling) ' insert the instance.
 		Forever
 	
 	End Method
 
 
+End Type ' end of the type
+
+Type Player Extends InstanceManager
+	Field Health
+	Field Score
+	Field Time
+	Field Bonus
+	Field movSpeedX
+	Field movSpeedY
+	
+	
 End Type
 
 'Azure Worlds Instance GFX Manager (technically there should be two types but who cares)
