@@ -26,6 +26,7 @@ Global AzInstanceList:TList
 Global AzInstanceIdList:TList ' instanceid list (hack?)
 Global AzCurrentFile:String=Null ' savecurrent filed
 Global AzFileFormatVersion:Int=1
+Global AzPlayerImg:String ' player img path
 Global AzWorldSizeX:Int ' World size X - integrate?
 Global AzWorldSizeY:Int
 Global AzWindowExplorerList:TList ' you can do this
@@ -308,8 +309,8 @@ Type InstanceManager Extends AzureWorlds
 	Field bonusBonus ' bonus given
 	Field winGiven ' Win given
 	Field physEnabled ' Super-Shit" Physics Engine Enabled
-	
-	Method InsertInstance:InstanceManager(instanceId,posX,posY,sizeX,sizeY,colourR,colourG,colourB,gridSize,styling)
+	Field image ' for players
+	Method InsertInstance:InstanceManager(instanceId,posX,posY,sizeX,sizeY,colourR,colourG,colourB,gridSize,styling,playerFlag=False)
 		If AzClickToInsert = 1 ' if click-to-insert is on (lazy btw)
 			Local insMan:InstanceManager = New InstanceManager
 			insMan.instanceId = AzCurrentInstanceId
@@ -322,11 +323,14 @@ Type InstanceManager Extends AzureWorlds
 			insMan.colourB = colourB
 			insMan.gridSize = gridSize
 			insMan.styling = styling
-			AzCurrentUniqueId = AzCurrentUniqueId + 1
-			insMan.uniqueId = AzCurrentUniqueId 
-			insMan.instanceIdDescription = insMan.DetermineInstanceParameters(instanceId) ' description of the InstanceID 
-			AzInstanceList.AddLast(insMan) ' add this to the list of instances
-			AzRegisterTreeView(insMan.instanceId,insMan.uniqueId)
+			If playerFlag <> True' if we aren NOT inserting a player
+				AzCurrentUniqueId = AzCurrentUniqueId + 1
+				insMan.uniqueId = AzCurrentUniqueId 
+				insMan.instanceIdDescription = insMan.DetermineInstanceParameters(instanceId) ' description of the InstanceID 
+				 ' add this to the list of instances
+				AzRegisterTreeView(insMan.instanceId,insMan.uniqueId)
+			EndIf
+			AzInstanceList.AddLast(insMan)
 		Return insMan ' return insMan
 		EndIf
 	End Method
@@ -625,19 +629,27 @@ Type InstanceManager Extends AzureWorlds
 		Forever
 	
 	End Method
-
-
+	
 End Type ' end of the type
-
+' AzureWorlds Player Manager
+' © 2019 Cosmo.
 Type Player Extends InstanceManager
-	Field Health
-	Field Score
-	Field Time
-	Field Bonus
-	Field movSpeedX
-	Field movSpeedY
-	
-	
+	Field Health:Int ' player health
+	Field Score:Int ' player score
+	Field Time:Int ' player time
+	Field Bonus:Int ' player bonus
+	Field Image:String="Engine\NonInstanceTextures\Player\bob.png") ' image url
+	Field Avatar:TImage ' image itself
+	Field X:Int ' X
+	Field Y:Int ' Y
+	Field movSpeedX:Int
+	Field movSpeedY:Int
+
+	Method InitPlayer(avatarId=Null,playerDefaultHealth=100,playerDefaultScore=0,playerDefaultTime=0,playerDefaultBonus=0) ' use l8r?
+		Local currentPlayer:Player = New Player
+		currentPlayer.Avatar = LoadImage(currentPlayer.Image) ' load the image
+		
+	End Method
 End Type
 
 'Azure Worlds Instance GFX Manager (technically there should be two types but who cares)
@@ -646,8 +658,8 @@ Type InstanceGFX Extends InstanceManager
 	Field gfxName:String ' gfx name
 	Field gfxImage:TImage ' gfx image - we don't even need to store the url!
 	Method LoadInstanceGFX() ' load GFX
-		Local gfxFolder:Byte Ptr = ReadDir("Engine\Gfx\") ' read every file in the Gfx\ folder - todo: use variable...
-		
+		Local gfxFolder:Byte Ptr = ReadDir("Engine\Gfx\") ' read every file in the Gfx\ folder
+	
 		If gfxFolder=0
 			HandleError(7,"Failed to read Gfx folder",1,0) ' throw an error and crash
 		EndIf
