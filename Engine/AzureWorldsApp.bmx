@@ -13,6 +13,7 @@ Global AzCurrentUniqueId:Int=0 ' Current Unique ID - integrate?
 Global AzCurrentSizeX:Int=30 ' Current size - X
 Global AzCurrentSizeY:Int=30 ' Current size - Y
 Global AzDebugDisplay:Int=1 ' Display debug information
+Global AzGfxDir:String ' GFX Directory
 Global AzOffsetX:Int=0 ' Offset X for scrolling
 Global AzOffsetY:Int=0 ' Offset Y for scrolling
 Global AzSpeedX:Int=20 ' Scrollspeed X
@@ -26,6 +27,7 @@ Global AzInstanceList:TList
 Global AzInstanceIdList:TList ' instanceid list (hack?)
 Global AzCurrentFile:String=Null ' savecurrent filed
 Global AzFileFormatVersion:Int=1
+Global AzIsPlayer:String ' are we running the azure worlds player?
 Global AzPlayerImg:String ' player img path
 Global AzWorldSizeX:Int ' World size X - integrate?
 Global AzWorldSizeY:Int
@@ -49,14 +51,14 @@ Global AzWindowEffectBtn:TGadget
 Global AzWindowPropBtn:TGadget
 Type AzureWorlds
 
-	Method Init(x=1228,y=928,d=0,h=0,introImg:String="NonInstanceTextures\avantgarde.png",displayTime:Int=6000,appTtl:String="avant-gardé eyes presents Azure Worlds",canvasSzX=1024,canvasSzY=768,worldSzX=4000,worldSzY=1500,gameName:String="AZURE WORLDS") ' placeholder values
+	Method Init(x=1228,y=928,d=0,h=0,introImg:String="NonInstanceTextures\avantgarde.png",displayTime:Int=6000,appTtl:String="avant-gardé eyes presents Azure Worlds",canvasSzX=1024,canvasSzY=768,worldSzX=4000,worldSzY=1500,gameName:String="AZURE WORLDS",logLocation:String="Engine\AvantGardeEyes.log",isPlayer:Int=0,gfxDir:String="Engine\Gfx\") ' placeholder values
 		AppTitle = appTtl
 		' preparation for loading from config
 		canvasSzX = x - x/5
 		canvasSzY = y - y/4
 		SeedRnd MilliSecs() ' seed the random number generator
-
-		Syslog = Self.OpenLog("Engine\AvantGardeEyes.log")
+		AzIsPlayer = isPlayer ' are we running the player?
+		Syslog = Self.OpenLog(logLocation)
 		WriteLog("avant-gardé eyes engine - playing frontend " + gameName,Syslog)
 		WriteLog("© 2019 avant-gardé eyes",Syslog)
 		WriteLog("Initalizing...",Syslog) ' log init
@@ -97,9 +99,9 @@ Type AzureWorlds
 		EndGraphics ' end the graphics as we use MaxGUI
 		WriteLog("Destroying image..",Syslog)
 		introImage = Null ' destroy the image
-		InitAzGui(AppTtl,x,y,canvasSzX,canvasSzY) ' initalize GUI
+		InitAzGui(AppTtl,x,y,canvasSzX,canvasSzY,isPlayer) ' initalize GUI
 		WriteLog("Initalising GFX Manager...",Syslog)
-		AzGfxManager.LoadInstanceGFX()
+		AzGfxManager.LoadInstanceGFX(gfxDir)
 		AzToolVisibility(1,0,0,0,0,0) ' set tool visibility to 1,0,0,0,0,0 as we dont need the rest
 		AzInitInstanceIdList(AzInstanceIdList) ' initalize the instanceid list
 		WriteLog("Init done.",Syslog)
@@ -139,115 +141,120 @@ Type AzureWorlds
 
 	End Method
 	
-	Method InitAzGui:Int(AppTtl:String,x,y,canvasSzX,canvasSzY) ' initalize the Az MaxGUI
-		WriteLog("UI initalising...",Syslog)
+	Method InitAzGui:Int(AppTtl:String,x,y,canvasSzX,canvasSzY,isPlayer:Int=0) ' initalize the Az MaxGUI
+		WriteLog("UI initialising...",Syslog)
 		AzWindow=CreateWindow(AppTtl,DesktopWidth()/5,DesktopHeight()/5,x,y,Null) ' main window
 		AzWindowCanvas = CreateCanvas(0,0,canvasSzX,canvasSzY,AzWindow) ' canvas - this holds the graphics
 		SetGraphics CanvasGraphics(AzWindowCanvas) ' redirect the graphics context to the canvas so we can draw stuff
-		AzWindowMenu = WindowMenu(AzWindow) ' window menu
-		' cut down on unnecessary variables here for most menus
-		AzWindowFileMenu = CreateMenu("File",0,AzWindowMenu) ' File menu
-		AzWindowGameMenu = CreateMenu("Game",100,AzWindowMenu) ' Game menu
-		AzWindowToolsMenu = CreateMenu("Tools",200,AzWindowMenu) ' Tools menu
-		AzWindowHelpMenu = CreateMenu("Help",300,AzWindowMenu) ' Help menu
-		' FILE MENU SUBMENUS
-		CreateMenu("New Game",1,AzWindowFileMenu) ' new game submenu
-		CreateMenu("Open Game",2,AzWindowFileMenu) ' open game submenu
-		CreateMenu("Save Game",3,AzWindowFileMenu) ' save game submenu
-		CreateMenu("Save Game As",4,AzWindowFileMenu) ' save game as submenu
-		CreateMenu("Upload",5,AzWindowFileMenu) ' upload menu
-		CreateMenu("",6,AzWindowFileMenu) ' blank dummy menu for divider
-		CreateMenu("Exit",7,AzWindowFileMenu) ' exit menu
+		If isPlayer = 0 ' if we are not initalizing the player
+			AzWindowMenu = WindowMenu(AzWindow) ' window menu
+			' cut down on unnecessary variables here for most menus
+			AzWindowFileMenu = CreateMenu("File",0,AzWindowMenu) ' File menu
+			AzWindowGameMenu = CreateMenu("Game",100,AzWindowMenu) ' Game menu
+			AzWindowToolsMenu = CreateMenu("Tools",200,AzWindowMenu) ' Tools menu
+			AzWindowHelpMenu = CreateMenu("Help",300,AzWindowMenu) ' Help menu
+			' FILE MENU SUBMENUS
+			CreateMenu("New Game",1,AzWindowFileMenu) ' new game submenu
+			CreateMenu("Open Game",2,AzWindowFileMenu) ' open game submenu
+			CreateMenu("Save Game",3,AzWindowFileMenu) ' save game submenu
+			CreateMenu("Save Game As",4,AzWindowFileMenu) ' save game as submenu
+			CreateMenu("Upload Level",5,AzWindowFileMenu) ' upload menu
+			CreateMenu("",6,AzWindowFileMenu) ' blank dummy menu for divider
+			CreateMenu("Exit",7,AzWindowFileMenu) ' exit menu
 		
-		' GAME MENU SUBMENUS
+			' GAME MENU SUBMENUS
 		
-		CreateMenu("Play",101,AzWindowGameMenu) ' player
-		CreateMenu("Settings...",102,AzWindowGameMenu) ' Settings menu
+			CreateMenu("Play",101,AzWindowGameMenu) ' player
+			CreateMenu("Settings...",102,AzWindowGameMenu) ' Settings menu
 		
-		' TOOLS MENU SUBMENUS
+			' TOOLS MENU SUBMENUS
 		
-		If AzDebugDisplay > 1
-			CreateMenu("Debug",201,AzWindowToolsMenu) ' Debug menu
-		EndIf
-		CreateMenu("Insert Object",202,AzWindowToolsMenu) ' Insert object menu
-		CreateMenu("Colour",203,AzWindowToolsMenu) ' Colour menu
-		CreateMenu("Size",204,AzWindowToolsMenu) ' Size menu
-		AzWindowToolsMenuStyleButton = CreateMenu("Style",206,AzWindowToolsMenu) ' Style menu - we need to handle this
-		CreateMenu("",207,AzWindowToolsMenu) ' Dummy menu for divider
-		CreateMenu("Check for Updates",208,AzWindowToolsMenu) ' Check for Updates
+			If AzDebugDisplay > 1
+				CreateMenu("Debug",201,AzWindowToolsMenu) ' Debug menu
+			EndIf
+			CreateMenu("Insert Object",202,AzWindowToolsMenu) ' Insert object menu
+			CreateMenu("Colour",203,AzWindowToolsMenu) ' Colour menu
+			CreateMenu("Size",204,AzWindowToolsMenu) ' Size menu
+			AzWindowToolsMenuStyleButton = CreateMenu("Style",206,AzWindowToolsMenu) ' Style menu - we need to handle this
+			CreateMenu("",207,AzWindowToolsMenu) ' Dummy menu for divider
+			CreateMenu("Check for Updates",208,AzWindowToolsMenu) ' Check for Updates
 		
-		CheckMenu AzWindowToolsMenuStyleButton ' so it doesn't act weirdly
-		' HELP MENU SUBMENUS
+			CheckMenu AzWindowToolsMenuStyleButton ' so it doesn't act weirdly
+			' HELP MENU SUBMENUS
 		
-		CreateMenu("Online Help",301,AzWindowHelpMenu) ' Online help menu
-		CreateMenu("Visit Azure Worlds",302,AzWindowHelpMenu) ' Visit Azure Worlds menu 
-		CreateMenu("",303,AzWindowHelpMenu) ' dummy
-		CreateMenu("About",304,AzWindowHelpMenu) ' About Menu
+			CreateMenu("Online Help",301,AzWindowHelpMenu) ' Online help menu
+			CreateMenu("Visit Azure Worlds",302,AzWindowHelpMenu) ' Visit Azure Worlds menu 
+			CreateMenu("",303,AzWindowHelpMenu) ' dummy
+			CreateMenu("About",304,AzWindowHelpMenu) ' About Menu
 		
-		UpdateWindowMenu AzWindow ' update the window menu
+			UpdateWindowMenu AzWindow ' update the window menu
 		
-		' Explorer
-		AzWindowExplorer = CreateTreeView(canvasSzX + 4,28,GadgetWidth(AzWindow) - canvasSzX - 30,GadgetHeight(AzWindow) - 125,AzWindow) ' Explorer - where the bricks are!
-		AzWindowExplorerRoot = TreeViewRoot(AzWindowExplorer) ' Root handle for adding shit
-		CreateLabel("Explorer: ",canvasSzX + 4,0,96,24,AzWindow) ' create the label 
-		AzWindowToolStrip = CreateLabel("Brick Tools: ",4,canvasSzY + 4,96,24,AzWindow) ' Tool strip label
+			' Explorer
+			AzWindowExplorer = CreateTreeView(canvasSzX + 4,28,GadgetWidth(AzWindow) - canvasSzX - 30,GadgetHeight(AzWindow) - 125,AzWindow) ' Explorer - where the bricks are!
+			AzWindowExplorerRoot = TreeViewRoot(AzWindowExplorer) ' Root handle for adding shit
+			CreateLabel("Explorer: ",canvasSzX + 4,0,96,24,AzWindow) ' create the label 
+			AzWindowToolStrip = CreateLabel("Brick Tools: ",4,canvasSzY + 4,96,24,AzWindow) ' Tool strip label
 		
-		' TOOLSTRIP for BLOCKS
-		AzWindowCtiBtn = CreateButton("Click-to-Insert: On",GadgetWidth(AzWindow)/8,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Click-to-Insert toggle
-		AzWindowDelBtn = CreateButton("Delete",GadgetWidth(AzWindow)/4.499,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Delete button
-		AzWindowSizeBtn = CreateButton("Resize",GadgetWidth(AzWindow)/3.141,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Size button
-		AzWindowColourBtn = CreateButton("Colour",GadgetWidth(AzWindow)/2.4,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Colour button
-		AzWindowEffectBtn = CreateButton("Effect",GadgetWidth(AzWindow)/1.954,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Effects and Style button
-		AzWindowPropBtn = CreateButton("Properties",GadgetWidth(AzWindow)/1.648,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Properties button
+			' TOOLSTRIP for BLOCKS
+			AzWindowCtiBtn = CreateButton("Click-to-Insert: On",GadgetWidth(AzWindow)/8,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Click-to-Insert toggle
+			AzWindowDelBtn = CreateButton("Delete",GadgetWidth(AzWindow)/4.499,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Delete button
+			AzWindowSizeBtn = CreateButton("Resize",GadgetWidth(AzWindow)/3.141,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Size button
+			AzWindowColourBtn = CreateButton("Colour",GadgetWidth(AzWindow)/2.4,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Colour button
+			AzWindowEffectBtn = CreateButton("Effect",GadgetWidth(AzWindow)/1.954,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Effects and Style button
+			AzWindowPropBtn = CreateButton("Properties",GadgetWidth(AzWindow)/1.648,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Properties button
+			EndIf 
 	End Method
 
 	Method AzToolVisibility(one,two,three,four,five,six)
-		If one=1 ' click to insert
-			ShowGadget AzWindowCtiBtn
-		Else
-			HideGadget AzWindowCtiBtn
-		EndIf
+		If AzIsPlayer = 0 'don't bother running if we're in the player
+			If one=1 ' click to insert
+				ShowGadget AzWindowCtiBtn
+			Else
+				HideGadget AzWindowCtiBtn
+			EndIf
 		
-		If two=1
-			ShowGadget AzWindowDelBtn
-		Else
-		 	HideGadget AzWindowDelBtn
-		EndIf
+			If two=1
+				ShowGadget AzWindowDelBtn
+			Else
+		 		HideGadget AzWindowDelBtn
+			EndIf
 		
-		If three=1
-			ShowGadget AzWindowSizeBtn
-		Else
-			HideGadget AzWindowSizeBtn
-		EndIf
+			If three=1
+				ShowGadget AzWindowSizeBtn
+			Else
+				HideGadget AzWindowSizeBtn
+			EndIf
 		
-		If four=1
-			ShowGadget AzWindowColourBtn	
-		Else
-			HideGadget AzWindowColourBtn
-		EndIf
+			If four=1
+				ShowGadget AzWindowColourBtn	
+			Else
+				HideGadget AzWindowColourBtn
+			EndIf
 		
-		If five=1
-			ShowGadget AzWindowEffectBtn
-		Else
-			HideGadget AzWindowEffectBtn	
-		EndIf
+			If five=1
+				ShowGadget AzWindowEffectBtn
+			Else
+				HideGadget AzWindowEffectBtn	
+			EndIf
 		
-		If six=1
-			ShowGadget AzWindowPropBtn
-		Else
-			HideGadget AzWindowPropBtn
-		EndIf
+			If six=1
+				ShowGadget AzWindowPropBtn
+			Else
+				HideGadget AzWindowPropBtn
+			EndIf
+		EndIf 
 	End Method
 	
 	Method AzInitInstanceIdList:TList(AzList:TList)
-		WriteLog("Registering Instance IDs...",Syslog)
-		Local Az0:String = "Block"
-		Local Az1:String = "CircleBlock"
-		AzList.AddLast(Az0)
-		WriteLog("Registered ID 0 with name " + Az0,Syslog)	
-		AzList.AddLast(Az1)
-		WriteLog("Registered ID 1 with name " + Az1,Syslog)		
-		Return AzList 
+		
+			WriteLog("Registering Instance IDs...",Syslog)
+			Local Az0:String = "Block"
+			Local Az1:String = "CircleBlock"
+			AzList.AddLast(Az0)
+			WriteLog("Registered ID 0 with name " + Az0,Syslog)	
+			AzList.AddLast(Az1)
+			WriteLog("Registered ID 1 with name " + Az1,Syslog)		
+			Return AzList 
 	End Method
 	
 	Method AzRegisterTreeView(instanceId,uniqueId)
@@ -411,8 +418,10 @@ Type InstanceManager Extends AzureWorlds
 			AzInstanceList.Remove(i) ' remove the instance from the instance list, making it invisible, intangible, and inaccessible but still extant 
 			i=Null ' remove the instance
 		Next
-		AzCurrentUniqueId = 0 ' set the current unique id to 0
-		ClearTreeView AzWindowExplorer ' clear the treeview 
+		If AzIsPlayer = 0 ' if we are not in the player
+			AzCurrentUniqueId = 0 ' set the current unique id to 0
+			ClearTreeView AzWindowExplorer ' clear the treeview 
+		EndIf 
 		Return
 	End Method
 	
@@ -664,8 +673,8 @@ Type InstanceGFX Extends InstanceManager
 	Field gfxId:Int ' gfx ID
 	Field gfxName:String ' gfx name
 	Field gfxImage:TImage ' gfx image - we don't even need to store the url!
-	Method LoadInstanceGFX() ' load GFX
-		Local gfxFolder:Byte Ptr = ReadDir("Engine\Gfx\") ' read every file in the Gfx\ folder
+	Method LoadInstanceGFX(gfxDir:String) ' load GFX
+		Local gfxFolder:Byte Ptr = ReadDir(gfxDir) ' read every file in the Gfx\ folder
 	
 		If gfxFolder=0
 			HandleError(7,"Failed to read Gfx folder",1,0) ' throw an error and crash
@@ -677,7 +686,7 @@ Type InstanceGFX Extends InstanceManager
 			If ExtractExt(currentGfx) = "png" ' load all PNG files ONLY
 				Local gfxInstance:InstanceGFX = New InstanceGFX ' create the gfx
 				
-				WriteLog("Loading GFX @ Engine\Gfx\" + currentGfx + " with ID " + gfxIndex,Syslog) ' log the gfx loading
+				WriteLog("Loading GFX @ " + GfxDir + " " + currentGfx + " with ID " + gfxIndex,Syslog) ' log the gfx loading
 				gfxInstance.gfxId = gfxIndex
 				gfxInstance.gfxName = setupGfxNames(gfxIndex) ' setup the gfx name with the gfx index 
 				gfxInstance.gfxImage = LoadImage("Engine\Gfx\" + currentGfx) ' load the gfx
