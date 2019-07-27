@@ -21,13 +21,13 @@ Function BrickProperties()
 			Case EVENT_GADGETACTION
 				Select EventSource()			
 					Case BpOk ' exit!
-						Local uniqueId:Int = GetCurrentlySelectedInstance() ' this function returns the index and thus uniqueId of the currently selected instance.
+						Local uniqueId:Int = InstanceMgr.GetCurrentlySelectedInstance() ' this function returns the index and thus uniqueId of the currently selected instance.
 						For InstanceMgr = EachIn AzInstanceList ' loop through every single
 							If InstanceMgr.uniqueId = uniqueId ' is it the currently selected Unique Id?
 								' temp variables for checking purposes
-								tempScoreBonus = Int GadgetText(BpScoreBonus) ' set the score bonus
-								tempTimeBonus = Int GadgetText(BpTimeBonus) ' set the time bonus
-								tempBonusBonus = Int GadgetText(BpBonusBonus) ' set the bonus bonus
+								Local tempScoreBonus = Int GadgetText(BpScoreBonus) ' set the score bonus
+								Local tempTimeBonus = Int GadgetText(BpTimeBonus) ' set the time bonus
+								Local tempBonusBonus = Int GadgetText(BpBonusBonus) ' set the bonus bonus
 								If tempScoreBonus <> 0
 									InstanceMgr.scoreBonus = tempScoreBonus ' set score bonus to temp var
 								ElseIf tempTimeBonus <> 0
@@ -36,9 +36,9 @@ Function BrickProperties()
 									InstanceMgr.bonusBonus = tempBonusBonus ' set bonus bonus to temp var
 								EndIf	
 								If ButtonState(BpPhysEnabled) = True
-									InstanceMgr.physEnabled = 1
+									InstanceMgr.physEnabled = 1 ' turn it on
 								Else
-									InstanceMgr.physEnabled = 0
+									InstanceMgr.physEnabled = 0 ' turn it off
 								EndIf
 								' is it checked?
 								

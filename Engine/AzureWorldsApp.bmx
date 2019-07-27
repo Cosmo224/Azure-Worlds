@@ -55,6 +55,7 @@ Type AzureWorlds
 		canvasSzX = x - x/5
 		canvasSzY = y - y/4
 		SeedRnd MilliSecs() ' seed the random number generator
+
 		Syslog = Self.OpenLog("Engine\AvantGardeEyes.log")
 		WriteLog("avant-gardé eyes engine - playing frontend " + gameName,Syslog)
 		WriteLog("© 2019 avant-gardé eyes",Syslog)
@@ -106,6 +107,8 @@ Type AzureWorlds
 	End Method
 	
 	Method OpenLog:TStream(logUrl:String)
+		DeleteFile logUrl ' remove partial log remnants
+		CreateFile logUrl 
 		Local logStr:TStream = OpenStream(logUrl) ' open the log
 		Return logStr
 	End Method
@@ -116,6 +119,7 @@ Type AzureWorlds
 			Return True
 		EndIf 
 	End Method
+		
 	
 	Method HandleError(errorId:Int,errorText:String,errorSeverity:Int,confirmation:Int) ' error handling. returns errorResult if errorSeverity=0 and confirmation=1.
 		WriteLog(errorText,Syslog) ' write the error to the log
@@ -638,7 +642,7 @@ Type Player Extends InstanceManager
 	Field Score:Int ' player score
 	Field Time:Int ' player time
 	Field Bonus:Int ' player bonus
-	Field Image:String="Engine\NonInstanceTextures\Player\bob.png") ' image url
+	Field Image:String="Engine\NonInstanceTextures\Player\bob.png" ' image url
 	Field Avatar:TImage ' image itself
 	Field X:Int ' X
 	Field Y:Int ' Y
@@ -647,8 +651,11 @@ Type Player Extends InstanceManager
 
 	Method InitPlayer(avatarId=Null,playerDefaultHealth=100,playerDefaultScore=0,playerDefaultTime=0,playerDefaultBonus=0) ' use l8r?
 		Local currentPlayer:Player = New Player
+		currentPlayer.Health = playerDefaultHealth
+		currentPlayer.Score = playerDefaultScore
+		currentPlayer.Time = playerDefaultTime
+		currentPlayer.Bonus = playerDefaultBonus
 		currentPlayer.Avatar = LoadImage(currentPlayer.Image) ' load the image
-		
 	End Method
 End Type
 
