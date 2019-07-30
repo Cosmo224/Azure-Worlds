@@ -143,10 +143,14 @@ Type AzureWorlds
 
 	End Method
 	
-	Method GetAppArgs()
-		'If AppArgs.length() > 1 ' yeah
-			
-		'EndIf
+	Method GetAppArgs() ' PLAYER ONLY
+		Select AppArgs.Length ' yeah
+			Case 1
+				App.HandleError(12,"Player argument not specified.",1,0) ' error out as the player is designed to only load levels
+			Case 2
+				App.WriteLog("Loading transparently.",Syslog) ' log transparent load
+				InstanceMgr.LoadInstancesFromFile(1,AppArgs[1]) ' load AppArg[1] as an AZW file
+		End Select
 	End Method
 	
 	Method InitAzGui:Int(AppTtl:String,x,y,canvasSzX,canvasSzY,isPlayer:Int=0) ' initalize the Az MaxGUI
