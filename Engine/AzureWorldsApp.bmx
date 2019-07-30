@@ -49,6 +49,7 @@ Global AzWindowSizeBtn:TGadget
 Global AzWindowColourBtn:TGadget
 Global AzWindowEffectBtn:TGadget
 Global AzWindowPropBtn:TGadget
+
 Type AzureWorlds
 
 	Method Init(x=1228,y=928,d=0,h=0,introImg:String="NonInstanceTextures\avantgarde.png",displayTime:Int=6000,appTtl:String="avant-gardé eyes presents Azure Worlds",canvasSzX=1024,canvasSzY=768,worldSzX=4000,worldSzY=1500,gameName:String="AZURE WORLDS",logLocation:String="Engine\AvantGardeEyes.log",isPlayer:Int=0,gfxDir:String="Engine\Gfx\") ' placeholder values
@@ -124,7 +125,7 @@ Type AzureWorlds
 		
 	
 	Method HandleError(errorId:Int,errorText:String,errorSeverity:Int,confirmation:Int) ' error handling. returns errorResult if errorSeverity=0 and confirmation=1.
-		WriteLog(errorText,Syslog) ' write the error to the log
+		WriteLog("ERROR #" + errorId + ": " + errorText,Syslog) ' write the error to the log
 		Select errorSeverity ' 0 = error, 1 = crash
 			Case 0
 				Select confirmation ' ok or ok/cancel
@@ -135,16 +136,29 @@ Type AzureWorlds
 						Return errorResult ' return the errorresult
 				End Select
 			Case 1
-				RuntimeError("Critical Error: ~n~n " + errorText + "~n~n Error Code: " + errorId + " Please contact support. ")
+				Notify("Critical Error: ~n~n" + errorText + "~n~nError Code: " + errorId + ". Please contact support. ")
+				App.Close() ' close gracefully instead of runtimeerror (at least try)
 			Default
 		End Select
 
 	End Method
 	
+	Method GetAppArgs()
+		'If AppArgs.length() > 1 ' yeah
+			
+		'EndIf
+	End Method
+	
 	Method InitAzGui:Int(AppTtl:String,x,y,canvasSzX,canvasSzY,isPlayer:Int=0) ' initalize the Az MaxGUI
 		WriteLog("UI initialising...",Syslog)
 		AzWindow=CreateWindow(AppTtl,DesktopWidth()/5,DesktopHeight()/5,x,y,Null) ' main window
-		AzWindowCanvas = CreateCanvas(0,0,canvasSzX,canvasSzY,AzWindow) ' canvas - this holds the graphics
+		Select isPlayer ' are we initalizing the player?
+			Case 0
+				AzWindowCanvas = CreateCanvas(0,0,canvasSzX,canvasSzY,AzWindow) ' canvas - this is the graphics context
+			Case 1
+				AzWindowCanvas = CreateCanvas(0,0,GadgetWidth(AzWindow),GadgetHeight(AzWindow),AzWindow) ' cover the whole screen if we're on the player
+		End Select
+		
 		SetGraphics CanvasGraphics(AzWindowCanvas) ' redirect the graphics context to the canvas so we can draw stuff
 		If isPlayer = 0 ' if we are not initalizing the player
 			AzWindowMenu = WindowMenu(AzWindow) ' window menu
@@ -193,7 +207,7 @@ Type AzureWorlds
 			AzWindowExplorer = CreateTreeView(canvasSzX + 4,28,GadgetWidth(AzWindow) - canvasSzX - 30,GadgetHeight(AzWindow) - 125,AzWindow) ' Explorer - where the bricks are!
 			AzWindowExplorerRoot = TreeViewRoot(AzWindowExplorer) ' Root handle for adding shit
 			CreateLabel("Explorer: ",canvasSzX + 4,0,96,24,AzWindow) ' create the label 
-			AzWindowToolStrip = CreateLabel("Brick Tools: ",4,canvasSzY + 4,96,24,AzWindow) ' Tool strip label
+			AzWindowToolStrip = CreateLabel("Tools: ",4,canvasSzY + 4,96,24,AzWindow) ' Tool strip label
 		
 			' TOOLSTRIP for BLOCKS
 			AzWindowCtiBtn = CreateButton("Click-to-Insert: On",GadgetWidth(AzWindow)/8,GadgetHeight(AzWindow) - GadgetHeight(AzWindow)/4.65,96,32,AzWindow) ' Click-to-Insert toggle
@@ -321,12 +335,19 @@ Type InstanceManager Extends AzureWorlds
 	Field winGiven ' Win given
 	Field physEnabled ' Super-Shit" Physics Engine Enabled
 	Field image ' for players
-	Method InsertInstance:InstanceManager(instanceId,posX,posY,sizeX,sizeY,colourR,colourG,colourB,gridSize,styling,playerFlag=False)
+	Method InsertInstance:InstanceManager(instanceId,posX,posY,sizeX,sizeY,colourR,colourG,colourB,gridSize,styling,loadFromFileFlag=False)
 		If AzClickToInsert = 1 ' if click-to-insert is on (lazy btw)
 			Local insMan:InstanceManager = New InstanceManager
 			insMan.instanceId = AzCurrentInstanceId
-			insMan.posX = RoundPos(posX,gridSize) ' round x to the grid size
-			insMan.posY = RoundPos(posY,gridSize) ' round y to the grid size
+			
+			If loadFromFileFlag = False 'are we loading from file (this prevents fucking up the positions of the bricks by rounding already rounded positions to the grid size)
+				insMan.posX = RoundPos(posX,gridSize) ' round x to the grid size
+				insMan.posY = RoundPos(posY,gridSize) ' round y to the grid size
+			Else
+				insMan.posX = posX ' dont round if we're loading in the player because its already been done when the bricks were inserted and it will fuck up the positions of the bricks
+				insMan.posY = posY 
+			EndIf
+			
 			insMan.sizeX = sizeX
 			insMan.sizeY = sizeY
 			insMan.colourR = colourR
@@ -334,14 +355,14 @@ Type InstanceManager Extends AzureWorlds
 			insMan.colourB = colourB
 			insMan.gridSize = gridSize
 			insMan.styling = styling
-			If playerFlag <> True' if we aren NOT inserting a player
-				AzCurrentUniqueId = AzCurrentUniqueId + 1
-				insMan.uniqueId = AzCurrentUniqueId 
-				insMan.instanceIdDescription = insMan.DetermineInstanceParameters(instanceId) ' description of the InstanceID 
-				 ' add this to the list of instances
+			AzCurrentUniqueId = AzCurrentUniqueId + 1
+			insMan.uniqueId = AzCurrentUniqueId 
+			insMan.instanceIdDescription = insMan.DetermineInstanceParameters(instanceId) ' description of the InstanceID 
+			
+			If AzIsPlayer = 0 ' are we in the builder?
 				AzRegisterTreeView(insMan.instanceId,insMan.uniqueId)
-			EndIf
-			AzInstanceList.AddLast(insMan)
+			EndIf 
+			AzInstanceList.AddLast(insMan) ' add this to the list of instances
 		Return insMan ' return insMan
 		EndIf
 	End Method
@@ -576,9 +597,16 @@ Type InstanceManager Extends AzureWorlds
 		Return
 	End Method
 	
-	Method LoadInstancesFromFile() ' load from file	
-	
-		Local fileName:String=RequestFile("Open World","Azure Worlds World:azw",False) ' request a file for loading
+	Method LoadInstancesFromFile(transparentLoad:Int=0,fileUrl:String=Null) ' load from file - transparentLoad doesn't prompt and loads fileUrl instead (used for player)
+		Local fileName:String ' filename to load
+		If transparentLoad=0
+			fileName = RequestFile("Open World","Azure Worlds World:azw",False) ' request a file for loading
+		Else
+			If fileUrl = Null ' if fileUrl was not actually specified because the person writing the call is a retard
+				HandleError(13,"Some idiot didn't actually set a fileUrl when calling LoadInstancesFromFile()",1,0)
+			EndIf
+			fileName = fileUrl ' bruh
+		EndIf
 		Local fileStream:TStream=OpenStream(fileName) ' open the file for loading...
 		WriteLog("Opening file at " + fileName,Syslog) ' log the action
 		Local fileHeader:String = ReadString(fileStream,3) ' read 3 bytes of the file as a string (header)
@@ -638,9 +666,9 @@ Type InstanceManager Extends AzureWorlds
 			Local savBonusBonus = ReadInt(fileStream) ' read bonus bonus
 			Local savWinGiven = ReadInt(fileStream) ' read win given
 			Local savPhysEnabled = ReadInt(fileStream) ' read phys enabled
-			InstanceMgr.InsertInstance(savInstanceId,savPosX,savPosY,savSizeX,savSizeY,savColourR,savColourG,savColourB,AzCurrentGridSize,savStyling) ' insert the instance.
+			InstanceMgr.InsertInstance(savInstanceId,savPosX,savPosY,savSizeX,savSizeY,savColourR,savColourG,savColourB,AzCurrentGridSize,savStyling,True) ' insert the instance.
 		Forever
-	
+		WriteLog("Loaded.",Syslog)
 	End Method
 	
 End Type ' end of the type
@@ -685,7 +713,6 @@ Type InstanceGFX Extends InstanceManager
 			currentGfx = NextFile(gfxFolder) ' loop through every file in the folder
 			If ExtractExt(currentGfx) = "png" ' load all PNG files ONLY
 				Local gfxInstance:InstanceGFX = New InstanceGFX ' create the gfx
-				
 				WriteLog("Loading GFX @ " + GfxDir + " " + currentGfx + " with ID " + gfxIndex,Syslog) ' log the gfx loading
 				gfxInstance.gfxId = gfxIndex
 				gfxInstance.gfxName = setupGfxNames(gfxIndex) ' setup the gfx name with the gfx index 

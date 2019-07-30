@@ -6,9 +6,8 @@ Function ChangeColour(recolourCurrentlySelectedBrick:Int=False)
 			' if we want to recolour the currently selected block
 			If recolourCurrentlySelectedBrick:Int=True
 				InstanceMgr.RecolourInstance()
-				return
+				Return
 			EndIf
-			
 			AzCurrentColourR = RequestedRed()
 			AzCurrentColourG = RequestedGreen()
 			AzCurrentColourB = RequestedBlue()
