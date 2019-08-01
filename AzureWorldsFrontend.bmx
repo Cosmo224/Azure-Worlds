@@ -10,8 +10,10 @@ Include "AzureWorldsFrontend_ChangeEffect.bmx"
 Include "AzureWorldsFrontend_BrickProperties.bmx"
 Global App:AzureWorlds = New AzureWorlds ' instantiate the app
 Global InstanceMgr:InstanceManager = New InstanceManager ' instantiate the instance manager
+Global PlayerMgr:Player = New Player ' doesnt actually use this just so it compiles against the latest versions of AzureWorldsApp
 'TODO: Get from Config file
 App.Init(1288,960,0,0,"Engine/NonInstanceTextures/avantgarde.png",7500) ' we don't need the last parameter
+
 Repeat
 	Select WaitEvent()
 		Case EVENT_WINDOWCLOSE ' application wants to close...
@@ -60,7 +62,7 @@ Repeat
 				Case 206
 					StylingHandler()
 				Case 304
-					Notify("AZURE WORLDS~nVersion 1.0. ~n~nCreated by Connor Hyde. Portions of code: ~nÂ© 2017-2019 Connor Hyde. ~nÂ© 2019 avant-gardÃ© eyes.")
+					Notify("AZURE WORLDS~nVersion 1.0. ~n~nCreated by Connor Hyde. Portions of code: ~n© 2017-2019 Connor Hyde. ~n© 2019 avant-gardé eyes.")
 			End Select 
 		Case EVENT_GADGETACTION
 			Select EventSource() ' what triggered it?

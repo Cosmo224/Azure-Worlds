@@ -23,6 +23,7 @@ Global AzCurrentStyling:Int=0 ' Current styling
 Global AzGlobalTimer:TTimer ' Timer for running the game
 Global AzGfxList:TList ' list of strings holding the path to every GFX in the Gfx/ foider
 Global AzGfxManager:InstanceGFX = New InstanceGFX ' GFX Manager
+Global AzPlayerList:TList
 Global AzInstanceList:TList
 Global AzInstanceIdList:TList ' instanceid list (hack?)
 Global AzCurrentFile:String=Null ' savecurrent filed
@@ -81,6 +82,8 @@ Type AzureWorlds
 		WriteLog("Initalized AzInstanceList.",Syslog)
 		AzInstanceIdList = New TList ' New Instance Id list - external display only
 		WriteLog("Initalized AzInstanceIdList.",Syslog)
+		AzPlayerList = New TList ' initalize the player list
+		WriteLog("Initalized AzPlayerList.",Syslog)
 		AzWindowExplorerList = New TList
 		WriteLog("Initalized AzWindowExplorerList.",Syslog)
 		AzGlobalTimer = CreateTimer(60) ' initalize the timer
@@ -329,6 +332,7 @@ Type InstanceManager Extends AzureWorlds
 	Field colourB ' Colour RGB blue of the brick
 	Field instanceId ' instance ID of the brick
 	Field instanceIdDescription:String ' instance ID description of the brick
+	Field colliding:Int ' player is colliding
 	Field uniqueId ' unique ID of the brick
 	Field gridSize ' grid size of the brick
 	Field styling ' styling of the brick
@@ -352,15 +356,16 @@ Type InstanceManager Extends AzureWorlds
 				insMan.posY = posY 
 			EndIf
 			
-			insMan.sizeX = sizeX
-			insMan.sizeY = sizeY
-			insMan.colourR = colourR
-			insMan.colourG = colourG
-			insMan.colourB = colourB
-			insMan.gridSize = gridSize
-			insMan.styling = styling
-			AzCurrentUniqueId = AzCurrentUniqueId + 1
-			insMan.uniqueId = AzCurrentUniqueId 
+			insMan.sizeX = sizeX ' set size x
+			insMan.sizeY = sizeY ' set size y
+			insMan.colourR = colourR ' set colour r
+			insMan.colourG = colourG ' set colour g
+			insMan.colourB = colourB ' set colour b
+			insMan.gridSize = gridSize ' set grid size
+			insMan.styling = styling ' set styling
+			insMan.colliding = False ' yeah!
+			AzCurrentUniqueId = AzCurrentUniqueId + 1 ' increment id
+			insMan.uniqueId = AzCurrentUniqueId ' set id
 			insMan.instanceIdDescription = insMan.DetermineInstanceParameters(instanceId) ' description of the InstanceID 
 			
 			If AzIsPlayer = 0 ' are we in the builder?
@@ -488,7 +493,7 @@ Type InstanceManager Extends AzureWorlds
 			x = -x
 		EndIf 
 		Local diff# = x Mod m ' modulus the x
-		If diff < .5 * m 
+		If diff < 1 * m 
 			Return (x-diff)*s
 		Else
 			Return (m+x-diff)*s
@@ -534,12 +539,19 @@ Type InstanceManager Extends AzureWorlds
 			End Select
 		SetColor 255,255,255 ' restore colour
 	Next
+	' draw the player(s)
+	For Local AzPlayer:Player = EachIn AzPlayerList ' loop thru all players
+		DrawImage AzPlayer.Avatar,AzPlayer.X,AzPlayer.Y ' draw them!!!!
+	Next
 	If AzDebugDisplay = 1 ' if debug display is on
 		SetColor 255,255,255
 		DrawText "DEBUG",0,0
 		DrawText "---",0,15 ' debug mode
 		DrawText "Offset X: " + AzOffsetX,0,30
-		DrawText "Offset Y: " + AzOffsetY,0,45		
+		DrawText "Offset Y: " + AzOffsetY,0,45
+		DrawText "Last inserted instance unique ID: " + AzCurrentUniqueId,0,60
+		DrawText "Last inserted instance Instance Type ID: " + AzCurrentInstanceId,0,75
+		DrawText "Styling enabled? " + AzCurrentStyling,0,90 		
 	EndIf 
 
 	Flip 
@@ -683,21 +695,76 @@ Type Player Extends InstanceManager
 	Field Score:Int ' player score
 	Field Time:Int ' player time
 	Field Bonus:Int ' player bonus
-	Field Image:String="Engine\NonInstanceTextures\Player\bob.png" ' image url
+	Field Image:String="..\Engine\NonInstanceTextures\Player\bob.png" ' image url (..\ because player)
 	Field Avatar:TImage ' image itself
-	Field X:Int ' X
-	Field Y:Int ' Y
-	Field movSpeedX:Int
-	Field movSpeedY:Int
-
+	Field X:Float ' X
+	Field Y:Float ' Y
+	Field movSpeedX:Float ' im retarded
+	Field movSpeedY:Float 
+	Field playerControlled=True ' for multiplayer eventually
 	Method InitPlayer(avatarId=Null,playerDefaultHealth=100,playerDefaultScore=0,playerDefaultTime=0,playerDefaultBonus=0) ' use l8r?
 		Local currentPlayer:Player = New Player
+		currentPlayer.movSpeedX = 0.05 ' starting movespeedx
+		currentPlayer.movSpeedY = 0.05 ' starting movespeedy
+		currentPlayer.playerControlled = True 'temp
 		currentPlayer.Health = playerDefaultHealth
 		currentPlayer.Score = playerDefaultScore
 		currentPlayer.Time = playerDefaultTime
 		currentPlayer.Bonus = playerDefaultBonus
 		currentPlayer.Avatar = LoadImage(currentPlayer.Image) ' load the image
+		AzPlayerList.AddLast(currentPlayer) ' add the player to the list of players
 	End Method
+	
+	Method MovePlayer()
+		For PlayerMgr = EachIn AzPlayerList ' loop through all players
+			If PlayerMgr.playerControlled = True' does the current player control it
+		   		Select EventData() ' select the data of the event
+					Case KEY_A ' A or left for left
+						PlayerMgr.movSpeedX = PlayerMgr.movSpeedX * 1.4	' mixes with friction for now
+						
+						PlayerMgr.X = PlayerMgr.X - PlayerMgr.movSpeedX	' only one line meh
+					Case KEY_D ' D or right for right
+						PlayerMgr.movSpeedX = PlayerMgr.movSpeedX * 1.4 ' increase speed	
+						PlayerMgr.X = PlayerMgr.X + PlayerMgr.movSpeedX ' move right
+				End Select		
+			EndIf
+		Next	
+	End Method
+	
+	Method PlayerPhysics(currentPlayer:Player=Null) ' player physics (so it can be called easier)
+		For PlayerMgr = EachIn AzPlayerList
+			If PlayerMgr.playerControlled = True ' player controlled
+				If PlayerMgr.movSpeedX < 0.01 PlayerMgr.movSpeedX = 0.01 ' so we dont get stuck forever
+				If PlayerMgr.movSpeedX > 7 PlayerMgr.movSpeedX = 7 'max speed cap
+				If PlayerMgr.movSpeedY > 0.02 PlayerMgr.movSpeedY = 0.02
+				If PlayerMgr.X > GraphicsWidth()/1.5
+					AzOffsetX = AzOffsetX + PlayerMgr.movSpeedX ' scroll the screen
+				EndIf 				
+				PlayerMgr.movSpeedX = PlayerMgr.movSpeedX / 1.1 ' bruh
+			EndIf
+			'playerphysics
+			For InstanceMgr = EachIn AzInstanceList ' each in
+				If InstanceMgr.posX > PlayerMgr.x And InstanceMgr.posX < PlayerMgr.x + 32 And InstanceMgr.posY > PlayerMgr.y And InstanceMgr.posY < PlayerMgr.y + 64 ' are we hitting a brick
+					Print("Colliding.")
+					InstanceMgr.Colliding = True ' we ARE colliding with this one
+				EndIf
+				If InstanceMgr.Colliding = True ' if we are colliding
+					PlayerMgr.movSpeedY = 0
+					If InstanceMgr.posX < PlayerMgr.x Or InstanceMgr.posX > PlayerMgr.x + 32 Or InstanceMgr.posY < PlayerMgr.y Or InstanceMgr.posY > PlayerMgr.y + 64 ' are we hitting a brick
+						Print("Decolliding.")
+						InstanceMgr.Colliding = False ' NOT colliding with anything
+						PlayerMgr.movSpeedY = 0.02
+					EndIf 
+				Else ' ok so
+					If PlayerMgr.y = 0 PlayerMgr.y = 0.02 ' WGHAT
+					Print(PlayerMgr.movSpeedY)
+					PlayerMgr.y = PlayerMgr.y + PlayerMgr.movSpeedY ' stop the player moving
+					PlayerMgr.movSpeedY = PlayerMgr.movSpeedY * 1.001
+				EndIf  ' TEMpvalues todo: only check in a box around the player
+			Next
+		Next 	
+	End Method
+	' CrappyPhysics® to go here
 End Type
 
 'Azure Worlds Instance GFX Manager (technically there should be two types but who cares)
