@@ -26,6 +26,7 @@ Global AzGfxManager:InstanceGFX = New InstanceGFX ' GFX Manager
 Global AzPlayerList:TList
 Global AzInstanceList:TList
 Global AzInstanceIdList:TList ' instanceid list (hack?)
+Global AzNumCollisions:Int ' Number of collisions between the current player being iterated through and an instance 
 Global AzCurrentFile:String=Null ' savecurrent filed
 Global AzFileFormatVersion:Int=1
 Global AzIsPlayer:String ' are we running the azure worlds player?
@@ -545,13 +546,14 @@ Type InstanceManager Extends AzureWorlds
 	Next
 	If AzDebugDisplay = 1 ' if debug display is on
 		SetColor 255,255,255
-		DrawText "DEBUG",0,0
+		DrawText "Welcome to the Debug Collective",0,0
 		DrawText "---",0,15 ' debug mode
 		DrawText "Offset X: " + AzOffsetX,0,30
 		DrawText "Offset Y: " + AzOffsetY,0,45
 		DrawText "Last inserted instance unique ID: " + AzCurrentUniqueId,0,60
 		DrawText "Last inserted instance Instance Type ID: " + AzCurrentInstanceId,0,75
 		DrawText "Styling enabled? " + AzCurrentStyling,0,90 		
+		DrawText "# of collisions: " + AzNumCollisions,0,105
 	EndIf 
 
 	Flip 
@@ -741,30 +743,56 @@ Type Player Extends InstanceManager
 					AzOffsetX = AzOffsetX + PlayerMgr.movSpeedX ' scroll the screen
 				EndIf 				
 				PlayerMgr.movSpeedX = PlayerMgr.movSpeedX / 1.1 ' bruh
+				For InstanceMgr = EachIn AzInstanceList ' each in
+					If InstanceMgr.posX > PlayerMgr.x And InstanceMgr.posX < PlayerMgr.x + 32 And InstanceMgr.posY > PlayerMgr.y And InstanceMgr.posY < PlayerMgr.y + 64 ' are we hitting a brick
+						Print("Colliding.")
+						InstanceMgr.Colliding = True ' we ARE colliding with this one
+					EndIf
+					If InstanceMgr.Colliding = True ' if we are colliding
+						PlayerMgr.movSpeedY = 0
+						If InstanceMgr.posX < PlayerMgr.x Or InstanceMgr.posX > PlayerMgr.x + 32 Or InstanceMgr.posY < PlayerMgr.y Or InstanceMgr.posY > PlayerMgr.y + 64 ' are we hitting a brick
+							Print("Decolliding.")
+							InstanceMgr.Colliding = False ' NOT colliding with anything
+							PlayerMgr.movSpeedY = 0.02
+						EndIf 
+					Else ' ok so
+						If PlayerMgr.y = 0 PlayerMgr.y = 0.02 ' WGHAT
+						Print(PlayerMgr.movSpeedY)
+						PlayerMgr.y = PlayerMgr.y + PlayerMgr.movSpeedY ' stop the player moving
+						PlayerMgr.movSpeedY = PlayerMgr.movSpeedY * 1.001
+					EndIf  ' TEMpvalues todo: only check in a box around the player
+				Next
 			EndIf
 			'playerphysics
-			For InstanceMgr = EachIn AzInstanceList ' each in
-				If InstanceMgr.posX > PlayerMgr.x And InstanceMgr.posX < PlayerMgr.x + 32 And InstanceMgr.posY > PlayerMgr.y And InstanceMgr.posY < PlayerMgr.y + 64 ' are we hitting a brick
-					Print("Colliding.")
-					InstanceMgr.Colliding = True ' we ARE colliding with this one
-				EndIf
-				If InstanceMgr.Colliding = True ' if we are colliding
-					PlayerMgr.movSpeedY = 0
-					If InstanceMgr.posX < PlayerMgr.x Or InstanceMgr.posX > PlayerMgr.x + 32 Or InstanceMgr.posY < PlayerMgr.y Or InstanceMgr.posY > PlayerMgr.y + 64 ' are we hitting a brick
-						Print("Decolliding.")
-						InstanceMgr.Colliding = False ' NOT colliding with anything
-						PlayerMgr.movSpeedY = 0.02
-					EndIf 
-				Else ' ok so
-					If PlayerMgr.y = 0 PlayerMgr.y = 0.02 ' WGHAT
-					Print(PlayerMgr.movSpeedY)
-					PlayerMgr.y = PlayerMgr.y + PlayerMgr.movSpeedY ' stop the player moving
-					PlayerMgr.movSpeedY = PlayerMgr.movSpeedY * 1.001
-				EndIf  ' TEMpvalues todo: only check in a box around the player
-			Next
 		Next 	
 	End Method
 	' CrappyPhysics® to go here
+	
+	Method PhysicsHandler(currentPlayer:Player=Null) ' Player Physics Handler 2.0
+		For PlayerMgr = EachIn AzPlayerList ' collide for all players
+			If PlayerMgr.movSpeedY < 5 PlayerMgr.movSpeedY = PlayerMgr.movSpeedY * 1.15 ' Y-speed cap and falling
+			If PlayerMgr.movSpeedX > 5 PlayerMgr.movSpeedX = 5 ' X-speed cap
+			For InstanceMgr = EachIn AzInstanceList ' check all instances for all players
+				If InstanceMgr.posX > PlayerMgr.x And InstanceMgr.posX < PlayerMgr.x + 32 And InstanceMgr.posY > PlayerMgr.y And InstanceMgr.posY < PlayerMgr.y + 64 ' TODO USE SIZE
+					If InstanceMgr.Colliding = False ' odd i know
+						InstanceMgr.Colliding = True ' we ARE colliding with this one
+						AzNumCollisions = AzNumCollisions + 1 ' increase the number of current collisions
+					EndIf 
+				Else
+					If InstanceMgr.Colliding = True 'i know this is weird
+						InstanceMgr.Colliding = False
+						AzNumCollisions = AzNumCollisions - 1 ' decrease the number of current collisions
+					EndIf ' yeah
+				EndIf
+			Next
+			If AzNumCollisions > 0
+				PlayerMgr.movSpeedY = 0 ' stop falling
+			EndIf			
+		Next
+		Print(PlayerMgr.movSpeedY)
+		PlayerMgr.Y = PlayerMgr.y + PlayerMgr.movSpeedY ' Move player position
+	End Method
+	
 End Type
 
 'Azure Worlds Instance GFX Manager (technically there should be two types but who cares)

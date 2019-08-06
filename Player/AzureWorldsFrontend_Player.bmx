@@ -13,7 +13,7 @@ Repeat
 	Select WaitEvent()
 		Case EVENT_TIMERTICK
 			InstanceMgr.Redraw()
-			PlayerMgr.PlayerPhysics() ' physics aa
+			PlayerMgr.PhysicsHandler() ' call Phys Handler 2.0
 		Case EVENT_KEYREPEAT ' undocumented for now but i was able to get it documented in the next release of blitzmax ng by committing it myself
 			PlayerMgr.MovePlayer() ' move the player
 		Case EVENT_WINDOWCLOSE
@@ -21,3 +21,4 @@ Repeat
 		
 	End Select 
 Forever
+
