@@ -159,7 +159,7 @@ Type AzureWorlds
 	
 	Method InitAzGui:Int(AppTtl:String,x,y,canvasSzX,canvasSzY,isPlayer:Int=0) ' initalize the Az MaxGUI
 		WriteLog("UI initialising...",Syslog)
-		AzWindow=CreateWindow(AppTtl,DesktopWidth()/5,DesktopHeight()/5,x,y,Null) ' main window
+		AzWindow=CreateWindow(AppTtl,DesktopWidth()/5,DesktopHeight()/10,x,y,Null) ' main window
 		Select isPlayer ' are we initalizing the player?
 			Case 0
 				AzWindowCanvas = CreateCanvas(0,0,canvasSzX,canvasSzY,AzWindow) ' canvas - this is the graphics context
@@ -518,10 +518,10 @@ Type InstanceManager Extends AzureWorlds
 			Select InstanceMgr.styling
 				Case 0
 					SetColor InstanceMgr.colourR-32,InstanceMgr.colourG-32,InstanceMgr.colourB-32 ' test styling
-					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' add offset to 
-					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
-					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
-					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 ' styletest
+					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 - AzOffsetY ' add offset to 
+					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/2.5,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 - AzOffsetY ' styletest
+					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/2.5 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 - AzOffsetY ' styletest
+					DrawRect InstanceMgr.posX + InstanceMgr.sizeX - InstanceMgr.sizeX/1.225 - AzOffsetX, InstanceMgr.posY + InstanceMgr.sizeY - InstanceMgr.sizeY/1.225,InstanceMgr.sizeX/4, InstanceMgr.sizeY/4 - AzOffsetY ' styletest
 				Case 1
 				
 				Default
@@ -626,6 +626,7 @@ Type InstanceManager Extends AzureWorlds
 			fileName = fileUrl ' bruh
 		EndIf
 		Local fileStream:TStream=OpenStream(fileName) ' open the file for loading...
+		If fileStream = Null HandleError(14,"That file doesn't exist. You most likely didn't give the player a file to load. If this error is triggering in the Builder, something is very wrong.",1,0) ' did we fail To Load the file?
 		WriteLog("Opening file at " + fileName,Syslog) ' log the action
 		Local fileHeader:String = ReadString(fileStream,3) ' read 3 bytes of the file as a string (header)
 		WriteLog("File header: " + fileHeader,Syslog) ' WriteLog the file header
@@ -724,7 +725,6 @@ Type Player Extends InstanceManager
 		   		Select EventData() ' select the data of the event
 					Case KEY_A ' A or left for left
 						PlayerMgr.movSpeedX = PlayerMgr.movSpeedX * 1.4	' mixes with friction for now
-						
 						PlayerMgr.X = PlayerMgr.X - PlayerMgr.movSpeedX	' only one line meh
 					Case KEY_D ' D or right for right
 						PlayerMgr.movSpeedX = PlayerMgr.movSpeedX * 1.4 ' increase speed	
@@ -763,7 +763,6 @@ Type Player Extends InstanceManager
 				If PlayerMgr.movSpeedY < 5 PlayerMgr.movSpeedY = PlayerMgr.movSpeedY * 1.15 ' Y-speed cap and falling
 			EndIf			
 		Next
-		Print(PlayerMgr.movSpeedY)
 		PlayerMgr.Y = PlayerMgr.y + PlayerMgr.movSpeedY ' Move player position
 	End Method
 	
