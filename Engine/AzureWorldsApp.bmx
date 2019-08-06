@@ -703,6 +703,7 @@ Type Player Extends InstanceManager
 	Field Y:Float ' Y
 	Field movSpeedX:Float ' im retarded
 	Field movSpeedY:Float 
+	Field deltaSpeed:Float = 0.02 ' the speed when we begin to fall
 	Field playerControlled=True ' for multiplayer eventually
 	Method InitPlayer(avatarId=Null,playerDefaultHealth=100,playerDefaultScore=0,playerDefaultTime=0,playerDefaultBonus=0) ' use l8r?
 		Local currentPlayer:Player = New Player
@@ -733,44 +734,11 @@ Type Player Extends InstanceManager
 		Next	
 	End Method
 	
-	Method PlayerPhysics(currentPlayer:Player=Null) ' player physics (so it can be called easier)
-		For PlayerMgr = EachIn AzPlayerList
-			If PlayerMgr.playerControlled = True ' player controlled
-				If PlayerMgr.movSpeedX < 0.01 PlayerMgr.movSpeedX = 0.01 ' so we dont get stuck forever
-				If PlayerMgr.movSpeedX > 7 PlayerMgr.movSpeedX = 7 'max speed cap
-				If PlayerMgr.movSpeedY > 0.02 PlayerMgr.movSpeedY = 0.02
-				If PlayerMgr.X > GraphicsWidth()/1.5
-					AzOffsetX = AzOffsetX + PlayerMgr.movSpeedX ' scroll the screen
-				EndIf 				
-				PlayerMgr.movSpeedX = PlayerMgr.movSpeedX / 1.1 ' bruh
-				For InstanceMgr = EachIn AzInstanceList ' each in
-					If InstanceMgr.posX > PlayerMgr.x And InstanceMgr.posX < PlayerMgr.x + 32 And InstanceMgr.posY > PlayerMgr.y And InstanceMgr.posY < PlayerMgr.y + 64 ' are we hitting a brick
-						Print("Colliding.")
-						InstanceMgr.Colliding = True ' we ARE colliding with this one
-					EndIf
-					If InstanceMgr.Colliding = True ' if we are colliding
-						PlayerMgr.movSpeedY = 0
-						If InstanceMgr.posX < PlayerMgr.x Or InstanceMgr.posX > PlayerMgr.x + 32 Or InstanceMgr.posY < PlayerMgr.y Or InstanceMgr.posY > PlayerMgr.y + 64 ' are we hitting a brick
-							Print("Decolliding.")
-							InstanceMgr.Colliding = False ' NOT colliding with anything
-							PlayerMgr.movSpeedY = 0.02
-						EndIf 
-					Else ' ok so
-						If PlayerMgr.y = 0 PlayerMgr.y = 0.02 ' WGHAT
-						Print(PlayerMgr.movSpeedY)
-						PlayerMgr.y = PlayerMgr.y + PlayerMgr.movSpeedY ' stop the player moving
-						PlayerMgr.movSpeedY = PlayerMgr.movSpeedY * 1.001
-					EndIf  ' TEMpvalues todo: only check in a box around the player
-				Next
-			EndIf
-			'playerphysics
-		Next 	
-	End Method
 	' CrappyPhysics® to go here
 	
 	Method PhysicsHandler(currentPlayer:Player=Null) ' Player Physics Handler 2.0
 		For PlayerMgr = EachIn AzPlayerList ' collide for all players
-			If PlayerMgr.movSpeedY < 5 PlayerMgr.movSpeedY = PlayerMgr.movSpeedY * 1.15 ' Y-speed cap and falling
+			
 			If PlayerMgr.movSpeedX > 5 PlayerMgr.movSpeedX = 5 ' X-speed cap
 			For InstanceMgr = EachIn AzInstanceList ' check all instances for all players
 				If InstanceMgr.posX > PlayerMgr.x And InstanceMgr.posX < PlayerMgr.x + 32 And InstanceMgr.posY > PlayerMgr.y And InstanceMgr.posY < PlayerMgr.y + 64 ' TODO USE SIZE
@@ -782,11 +750,17 @@ Type Player Extends InstanceManager
 					If InstanceMgr.Colliding = True 'i know this is weird
 						InstanceMgr.Colliding = False
 						AzNumCollisions = AzNumCollisions - 1 ' decrease the number of current collisions
-					EndIf ' yeah
+						' when we first hit 0 i guess
+						If AzNumCollisions = 0
+							PlayerMgr.movSpeedY = PlayerMgr.movSpeedY + PlayerMgr.deltaSpeed ' add deltaspeed
+						EndIf
+						EndIf ' yeah
 				EndIf
 			Next
 			If AzNumCollisions > 0
 				PlayerMgr.movSpeedY = 0 ' stop falling
+			Else
+				If PlayerMgr.movSpeedY < 5 PlayerMgr.movSpeedY = PlayerMgr.movSpeedY * 1.15 ' Y-speed cap and falling
 			EndIf			
 		Next
 		Print(PlayerMgr.movSpeedY)
