@@ -1,2 +1,1 @@
-# Azure-Worlds
-New sandbox game
+# Azure Worlds: going to be rewritten in C#.
