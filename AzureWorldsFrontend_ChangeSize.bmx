@@ -1,6 +1,6 @@
 
 Function ChangeSize(resizeCurrentlySelectedBrick=False) ' 
-	Local CsWindow:TGadget = CreateWindow("ChangeSize",GraphicsWidth()/5,GraphicsHeight()/5,400,200,Null) ' Window
+	Local CsWindow:TGadget = CreateWindow("Change Brick Size",GraphicsWidth()/5,GraphicsHeight()/5,400,200,Null) ' Window
 	Local CsXLabel:TGadget = CreateLabel("X: ",4,18,80,24,CsWindow)
 	Local CsYLabel:TGadget = CreateLabel("Y: ",4,42,80,24,CsWindow)
 	Local CsXSize:TGadget = CreateTextField(88,16,244,24,CsWindow) ' Object type label

@@ -41,7 +41,6 @@ Function BrickProperties()
 									InstanceMgr.physEnabled = 0 ' turn it off
 								EndIf
 								' is it checked?
-								
 							EndIf
 						Next
 						

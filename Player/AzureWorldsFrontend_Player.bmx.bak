@@ -14,7 +14,7 @@ Repeat
 		Case EVENT_TIMERTICK
 			InstanceMgr.Redraw()
 			PlayerMgr.PhysicsHandler() ' call Phys Handler 2.0
-		Case EVENT_KEYDOWN
+		Case EVENT_KEYHIT
 			PlayerMgr.JumpPlayer() ' to do move(?)
 		Case EVENT_KEYREPEAT ' undocumented for now but i was able to get it documented in the next release of blitzmax ng by committing it myself
 			PlayerMgr.MovePlayer() ' move the player

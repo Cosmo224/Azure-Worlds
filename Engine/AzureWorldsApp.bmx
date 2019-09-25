@@ -20,6 +20,7 @@ Global AzSpeedX:Int=20 ' Scrollspeed X
 Global AzSpeedY:Int=20 ' Scrollspeed Y (this and Scrollspeed X vars placeholder values)
 Global AzClickToInsert:Int=1 ' click-to-insert (are blocks insertable)
 Global AzCurrentStyling:Int=0 ' Current styling
+Global AzCurrentInstanceIdDescription:String ' current instance id name
 Global AzGlobalTimer:TTimer ' Timer for running the game
 Global AzGfxList:TList ' list of strings holding the path to every GFX in the Gfx/ foider
 Global AzGfxManager:InstanceGFX = New InstanceGFX ' GFX Manager
@@ -280,7 +281,8 @@ Type AzureWorlds
 	End Method
 	
 	Method AzRegisterTreeView(instanceId,uniqueId)
-		Local AzT:TGadget = AddTreeViewNode(instanceId + " (ID: " + uniqueId + ")",AzWindowExplorerRoot) ' add the tree view node to the root of the explorer
+		
+		Local AzT:TGadget = AddTreeViewNode(AzCurrentInstanceIdDescription + " (ID: " + uniqueId + ")",AzWindowExplorerRoot) ' add the tree view node to the root of the explorer
 		AzWindowExplorerList.AddLast(AzT)
 	End Method
 
@@ -368,7 +370,7 @@ Type InstanceManager Extends AzureWorlds
 			AzCurrentUniqueId = AzCurrentUniqueId + 1 ' increment id
 			insMan.uniqueId = AzCurrentUniqueId ' set id
 			insMan.instanceIdDescription = insMan.DetermineInstanceParameters(instanceId) ' description of the InstanceID 
-			
+			AzCurrentInstanceIdDescription = insMan.instanceIdDescription
 			If AzIsPlayer = 0 ' are we in the builder?
 				AzRegisterTreeView(insMan.instanceId,insMan.uniqueId)
 			EndIf 
@@ -400,6 +402,7 @@ Type InstanceManager Extends AzureWorlds
 	Method RecolourInstance(uniqueId:Int=Null) ' merge functions?
 		If uniqueId = Null ' if we want to resize currently selected instance instead of arbitrary instance
 			uniqueId = GetCurrentlySelectedInstance() ' get the currently selected instance
+			WriteLog("Recolouring instance with ID " + uniqueId,Syslog)
 		EndIf 
 		
 		For InstanceMgr = EachIn AzInstanceList ' loop through every instance...
@@ -543,11 +546,20 @@ Type InstanceManager Extends AzureWorlds
 	' draw the player(s)
 	For Local AzPlayer:Player = EachIn AzPlayerList ' loop thru all players
 		DrawImage AzPlayer.Avatar,AzPlayer.X,AzPlayer.Y ' draw them!!!!
+		If AzDebugDisplay = 1  ' its debug
+			DrawText "Player X: " + AzPlayer.X,0,120
+			DrawText "Player Y: " + AzPlayer.Y,0,135
+			DrawText "Player move speed X: " + AzPlayer.movSpeedX,0,150
+			DrawText "Player move speed Y: " + AzPlayer.movSpeedY,0,165
+			DrawText "Player jumping? " + AzPlayer.jumping,0,180
+			DrawText "Player acceleration " + AzPlayer.acceleration,0,195
+			DrawText "Acceleration decrementation: " + AzPlayer.accelerationDec,0,210
+		EndIf
 	Next
 	If AzDebugDisplay = 1 ' if debug display is on
 		SetColor 255,255,255
 		DrawText "Welcome to the Debug Collective",0,0
-		DrawText "---",0,15 ' debug mode
+		DrawText "-------------------------------",0,15 ' debug mode
 		DrawText "Offset X: " + AzOffsetX,0,30
 		DrawText "Offset Y: " + AzOffsetY,0,45
 		DrawText "Last inserted instance unique ID: " + AzCurrentUniqueId,0,60
@@ -704,7 +716,13 @@ Type Player Extends InstanceManager
 	Field Y:Float ' Y
 	Field movSpeedX:Float ' im retarded
 	Field movSpeedY:Float 
+	Field acceleration:Float
+	Field accelerationInc:Float 
+	Field accelerationDec:Float 
+	Field deltaAccelerationIncDec:Float
+	Field deltaJumpY:Float
 	Field deltaSpeed:Float = 0.02 ' the speed when we begin to fall
+	Field Jumping:Float
 	Field playerControlled=True ' for multiplayer eventually
 	Method InitPlayer(avatarId=Null,playerDefaultHealth=100,playerDefaultScore=0,playerDefaultTime=0,playerDefaultBonus=0) ' use l8r?
 		Local currentPlayer:Player = New Player
@@ -716,6 +734,10 @@ Type Player Extends InstanceManager
 		currentPlayer.Time = playerDefaultTime
 		currentPlayer.Bonus = playerDefaultBonus
 		currentPlayer.Avatar = LoadImage(currentPlayer.Image) ' load the image
+		currentPlayer.acceleration = 5
+		currentPlayer.deltaSpeed = 0.02
+		currentPlayer.accelerationDec = 0.0
+		currentPlayer.deltaJumpY = 2
 		AzPlayerList.AddLast(currentPlayer) ' add the player to the list of players
 	End Method
 	
@@ -734,12 +756,27 @@ Type Player Extends InstanceManager
 		Next	
 	End Method
 	
+	
+	Method JumpPlayer() ' this will work a lot better
+		For PlayerMgr = EachIn AzPlayerList ' loop through all players
+			If PlayerMgr.playerControlled = True' does the current player control it
+		   		Select EventData() ' select the data of the event
+					Case KEY_SPACE
+						PlayerMgr.jumping = True ' yes we're jumping
+						Print(playerMgr.deltaJumpY)
+						PlayerMgr.movSpeedY = PlayerMgr.movSpeedY - PlayerMgr.deltaJumpY ' Delta Jump Y
+				End Select		
+			EndIf
+		Next
+	End Method
+	
 	' CrappyPhysics® to go here
 	
 	Method PhysicsHandler(currentPlayer:Player=Null) ' Player Physics Handler 2.0
 		For PlayerMgr = EachIn AzPlayerList ' collide for all players
-			
 			If PlayerMgr.movSpeedX > 5 PlayerMgr.movSpeedX = 5 ' X-speed cap
+			If PlayerMgr.movSpeedY > 5 PlayerMgr.movSpeedY = 5
+			If PlayerMgr.movSpeedY < -5 PlayerMgr.movSpeedY = -5
 			For InstanceMgr = EachIn AzInstanceList ' check all instances for all players
 				If InstanceMgr.posX > PlayerMgr.x And InstanceMgr.posX < PlayerMgr.x + 32 And InstanceMgr.posY > PlayerMgr.y And InstanceMgr.posY < PlayerMgr.y + 64 ' TODO USE SIZE
 					If InstanceMgr.Colliding = False ' odd i know
@@ -754,16 +791,28 @@ Type Player Extends InstanceManager
 						If AzNumCollisions = 0
 							PlayerMgr.movSpeedY = PlayerMgr.movSpeedY + PlayerMgr.deltaSpeed ' add deltaspeed
 						EndIf
-						EndIf ' yeah
+					EndIf ' yeah
 				EndIf
 			Next
-			If AzNumCollisions > 0
+			If AzNumCollisions > 0 And PlayerMgr.Jumping = False
 				PlayerMgr.movSpeedY = 0 ' stop falling
-			Else
+			ElseIf AzNumCollisions = 0 And PlayerMgr.Jumping = False  ' if we are not jumping
 				If PlayerMgr.movSpeedY < 5 PlayerMgr.movSpeedY = PlayerMgr.movSpeedY * 1.15 ' Y-speed cap and falling
+			EndIf
+			If PlayerMgr.Jumping = True ' we are jumping
+				PlayerMgr.movSpeedY = PlayerMgr.movSpeedY - acceleration ' increment by acceleration multiplied by 15 because negative numbers amirite
+				PlayerMgr.acceleration = PlayerMgr.acceleration - PlayerMgr.accelerationDec ' accelerationDec
+				PlayerMgr.accelerationDec = PlayerMgr.accelerationDec + 0.5 ' static value for now
+				If PlayerMgr.acceleration < -5 PlayerMgr.acceleration = -5 ' not too fast 
+				If PlayerMgr.acceleration > 5 PlayerMgr.acceleration = 5
+				'If PlayerMgr.accelerationDec > 2.5 PlayerMgr.accelerationDec = 2.5
+				If AzNumCollisions > 0 ' get out if we hit something
+					PlayerMgr.Jumping = False
+					PlayerMgr.acceleration = 0
+				EndIf 
 			EndIf			
 		Next
-		PlayerMgr.Y = PlayerMgr.y + PlayerMgr.movSpeedY ' Move player position
+		PlayerMgr.Y = PlayerMgr.y + PlayerMgr.movSpeedY 
 	End Method
 	
 End Type
